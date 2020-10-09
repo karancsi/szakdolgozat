@@ -1,0 +1,110 @@
+<html>
+<head>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="jobstyle.css">
+    <link rel="stylesheet" href="style.css">
+
+    <meta charset="UTF-8">
+
+<title>Jobs</title>
+</head>
+
+<body>
+
+    <!-- Navbar (sit on top) -->
+    <div class="w3-top">
+        <div class="w3-bar w3-white w3-wide w3-padding w3-card">
+            <a href="Home.html" class="w3-bar-item w3-button"><b>Interaktív Gantt diagram</b></a>
+            <!-- Float links to the right. Hide them on small screens -->
+            <div class="w3-right w3-hide-small">
+                <a href="Home.html" class="w3-bar-item w3-button">Short description</a>
+                <a href="Home.html" class="w3-bar-item w3-button">Gantt-chart</a>
+                <a href = "Jobs.html"  class="w3-bar-item w3-button">Jobs</a>
+                <!--  <li> <button onclick="location.href = 'Jobs.html';">Jobs</button></li>
+           -->
+            </div>
+        </div>
+    </div>
+
+    <div class="jobcontainer">
+        <form  
+
+        id="jsonFile"
+        name="jsonFile"
+        enctype="multipart/form-data"
+        method="post"
+        class="fileinput"
+        >
+        
+            <h2>Json File</h2>
+            <input class="w3-bar-item w3-button" id="fileinput" value="asd" placeholder="asdfgh"
+            class="inputbutton" type="file" ></input>
+            <label id="inputfile_name"class="w3-bar-item w3-button" class="inputbutton" for="fileinput">Choose File!</label>
+            <input
+                type="button"
+                class="w3-bar-item w3-button"
+                
+                id="btnLoad"
+                value="Load"
+                onclick="loadFile();"
+            />
+            <label id="lblLoad"class="w3-bar-item w3-button" class="inputbutton" for="btnLoad">Load</label>
+        
+    </form>
+
+
+    <div id ="myDiv">
+        <svg name="chart" class="chart" ></svg>
+        <div id ="tooltip" style="position: absolute; opacity: 0;" class="tooltip"></div>
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+        <script src="jquery.js"></script>
+        <script src="drawChart.js"></script>
+
+        
+    </div>
+
+    <button onclick="btnCriterion()" class="w3-bar-item w3-button">Optimality criterion</button>
+    <button onclick="createOcTable()"  class="w3-bar-item w3-button">Occupancy rate</button>
+    <button onclick="btnDueDate()"  class="w3-bar-item w3-button">Due Dates</button>
+    
+</div>
+  <!-- <body class="container">
+    <div  >
+        <div class="menu">
+            <ul>
+            <li><button onclick="location.href = 'index.html';">Home</button></li>
+            <li> <button onclick="location.href = 'Jobs.html';">Jobs</button></li>
+            <li><button onclick="location.href = 'Gantt-chart.html';">Gantt-chart</button></li>
+            </ul>
+            <hr size:3px, width: 90%, align: center>
+            
+            <form   
+                id="jsonFile"
+                name="jsonFile"
+                enctype="multipart/form-data"
+                method="post">
+                
+                    <h2>Json File</h2>
+                    <input type="file" id="fileinput" />
+                    <input
+                        type="button"
+                        id="btnLoad"
+                        value="Load"
+                        onclick="loadFile();"
+                    />
+                
+            </form>
+
+            <div>
+                <svg width="500" height="800" class="bar-chart"></svg>
+                <script src="https://d3js.org/d3.v5.min.js"></script>
+                <script src="jquery.js"></script>
+                <script src="proba.js"></script>
+                
+            </div>
+        </div>
+        -->
+</body>
+</html>
+
+

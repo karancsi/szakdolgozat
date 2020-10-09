@@ -1,0 +1,87 @@
+.container{
+   height:auto;
+   width: auto;
+   background-image: linear-gradient(#04806e, #1d8d96,#4e998e,#5cbfb1, #288073, #04806e); 
+}
+
+.menu ul{
+   display: inline-flex;
+   margin:  50px;
+   font-size: 30px;
+}
+.menu ul li{
+   list-style: none;
+   color:#ffffff;
+   padding-left: 40px;
+   padding-right: 40px;
+}
+.menu ul li button{
+   font-style: italic;
+   font-size: 20px;;
+   font-family:"Comic Sans MS", cursive, sans-serif;
+   color: white; 
+   text-decoration: none;
+   border: 3px solid transparent;
+   border-radius: 40px;
+   background-image: linear-gradient(#ffe280,#ccaf4e,#826504 ),radial-gradient(circle at top left, #373737, #ea75f0);
+   background-origin: border-box ;
+   cursor: pointer;
+   display: block;
+   padding-inline-start: 27px;
+   padding-inline-end: 27px;
+}
+
+.banner{
+   height: 90%;
+   top: 15%;
+   margin: auto;
+   font-family:"Comic Sans MS", cursive, sans-serif;
+   font-size: 25px;
+   text-align: center;
+   position: relative;
+   color: white;
+   padding-left: 15px;
+   padding-right: 15px;
+} 
+.app-picture {
+   
+   display: flex;
+   align-items:center;
+   
+   padding-left: 50px;
+}
+.app-picture img{
+   border: 4px solid transparent;
+   border-radius: 50px;
+   background-image: linear-gradient(#826504,#ffe280,#ccaf4e,#826504 );
+   
+}
+
+.contentdiv{
+   width:600px; 
+    align-items: center; 
+    padding-left: 70%;
+}
+ 
+.picrow {
+   display: flex;
+   height: 200px; 
+ }
+
+ #fileinput{
+    width: 0.1px;
+    height: 0.1px;
+    opacity:0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+ }
+
+ #btnLoad{
+   width: 0.1px;
+   height: 0.1px;
+   opacity:0;
+   overflow: hidden;
+   position: absolute;
+   z-index: -1;
+ }

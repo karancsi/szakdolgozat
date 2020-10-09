@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+
+<meta charset="UTF-8">
+
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="style.css">
+<body>
+
+    <!-- Navbar (sit on top) -->
+    <div class="w3-top">
+        <div class="w3-bar w3-white w3-wide w3-padding w3-card">
+            <a href="#home" class="w3-bar-item w3-button"><b>Interactive Gantt chart</b></a>
+            <!-- Float links to the right. Hide them on small screens -->
+            <div class="w3-right w3-hide-small">
+                <a href="#desc" class="w3-bar-item w3-button">Short description</a>
+                <a href="#chart" class="w3-bar-item w3-button">Gantt-chart</a>
+                <a href = "Jobs.html"  class="w3-bar-item w3-button">Jobs</a>
+                <!--  <li> <button onclick="location.href = 'Jobs.html';">Jobs</button></li>
+           -->
+            </div>
+        </div>
+    </div>
+
+    <!-- StartPicture -->
+    <header class="w3-display-container w3-content w3-wide" style="max-width:1500px;" id="home">
+        <div></div> <img src="startpic.jpg" width="1500" height="120%"></div>
+
+    </header>
+
+    <!-- Page content -->
+
+    <!-- Short description -->
+    <div class="w3-content w3-padding" style="max-width:1564px">
+        <div class="w3-container w3-padding-32" id="desc">
+            <h3 class="w3-border-bottom w3-border-light-grey w3-padding-16" style="background-color: hsl(33, 50%, 53%); ">Short description</h3>
+        </div>
+
+        <div class="w3-col l3 m6 w3-margin-bottom" style="width: 100%;">
+            <div class="w3-display-container">
+                <div class="w3-display-topleft w3-black w3-padding" class="contentdiv"
+                   >Data visualization</div>
+
+                <div style="   display: flex;   align-items:center;">
+                    <img src="dataviz.jpg" style="width:600px; vertical-align:middle;">
+                    <span style="padding-left: 60px;">A termelés mindegyik szakaszában keletkeznek adatok, melyek a
+                        rendszer állapo-táról, működéséről, eredményességéről számolnak be.
+                        Akárhogy tartjuk őket nyil-ván, nehézkes kiigazodni a pontos eredményeken és összefüggéseken, ha
+                        csak a számokat látjuk. Minél több adat áll rendelkezésre, annál szükségszerűbbé válik, hogy
+                        ezeket átlássuk könnyedén.
+                        Különféle megjelenítési technikák segítségével olyan részinformációk is felszínre kerülhetnek,
+                        amiket csupán az adatok halmazát szemlélve nem bukkannának elő. Célszerű ezeket dinamikus,
+                        interaktív formában ábrázolni, hogy a kulcsfontosságú részleteket is észrevehessük.
+                        Megjelenítésük történhet például pontok, vonalak, sávok, hisztogramok segítségével.
+                        <br>Egy jól kialakított és alkalmazott adatvizualizáció segíthet fontosabb stratégiai, tervezési
+                        döntések meghozatalában, mivel a rengeteg adatból származó informá-ció így jobban átlátható. A
+                        döntéshozatalt az is előbbre viszi, hogy ezek által, biz-tos adatokra alapozva lehet elemzéseket
+                        készíteni.
+
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gantt-Chart -->
+    <div class="w3-container w3-padding-32" id="chart">
+        <h3 class="w3-border-bottom w3-border-light-grey w3-padding-16" style="background-color: #508aa1;">Gantt-chart</h3>
+        <p>Bármely ütemezési feladatról, projektről legyen szó, mind többrétű tevékenysé-gekből áll össze.
+            Szükségszerű megalkotni azokat a folyamatokat, amelyek mo-dellezik számunkra a valóság megismerésétől a
+            modellalkotásig tartó művelete-ket.
+            A Gantt-diagram mind a folyamatszervezésének, mind a projektek tervezésének és nyomon követésének
+            nélkülözhetetlen komponense.
+        </p>
+
+    </div>
+
+    <div class="w3-row-padding w3-grayscale">
+        <div class="w3-col l3 m6 w3-margin-bottom" style="width: 400px; padding-left: 20px;">
+            <img src="Henry_L._Gantt.jpg" class="picrow" >
+            <h3>Henry L. Gantt</h3>
+            <p>Pályafutását egy vasöntödében kezdte, majd Frederick Taylor oldalán irányítási elvket dolgozott ki.
+                Később Gantt a szakemberek körében nagy elismerést nyert a „Munka, bérek és nyereség: hatásuk a
+                megélhetési költségekre” (1910), „Ipari vezetés” (1916) és „Szervezés a munkához” (1919) könyveinek
+                köszönhetően. Tanácsadóként nagy tiszteletnek örvendett az általános vezetési kérdésekben, és az első
+                világháború idején az amerikai kormánynál dolgozott. Nem sokkal a háború befejezése után, 1919-ben hunyt
+                el. A róla elnevezett és Karol Adamiecki (1866-1933) munkájára épülő Gantt-diagram feltalálásának
+                köszönhetően Henry L. Gantt még mindig a sok előadás, képzés és projektnek a "része" a mai napig.
+            </p>
+        </div>
+        <div class="w3-col l3 m6 w3-margin-bottom" style="padding-left: 60px; width: 450px;">
+            <img src="gantt-chart-v.png"   class="picrow" style="width: 400px;">
+            <h3>Gantt-chart</h3>
+            <p>A Gantt-diagram előnye abban rejlik, hogy mennyire könnyű megérteni. A különféle tevékenységek vagy
+                munkacsomagok a bal oldalon egymás fölött vannak felsorolva, míg a jobb oldali megfelelő sávok
+                vízszintes idővonalon ábrázolják az egyes tevékenységek időtartamát. Ha például az A projekt fázis
+                oszlopának félpályája átfedi a B projekt fázisának sávját, ez azt jelzi, hogy a B fázis azonnal
+                elkezdődhet, amint az A fázis félig befejeződik. A projekt fázisai közötti függőségeket nyilakkal is
+                ábrázolhatjuk.</p>
+        </div>
+        <div class="w3-col l3 m6 w3-margin-bottom"  class="picrow"  style="width: 470px; padding-left: 40px;">
+            <img src="motivation.png" class="picrow">
+            <h3>Gantt öröksége</h3>
+            <p>Noha Gantt ma elsősorban erről a központi gondolatról ismert, számos egyéb eredménye nem kevésbé
+                progresszív. Például megtervezte a „feladat- és jutalomrendszert”. Ebben a rendszerben a munkavállalók a
+                szokásos fizetésük felett százalékos bónuszt kapnak, ha meghatározott napi munkadíjat érnek el. Minél
+                gyorsabban végzik munkájukat, annál magasabb a további bónusz fizetésük. A lassabb munkabérekért
+                kiszabott büntetések kifejezetten ki vannak zárva. Gantt az emberek motiválásáról szólt, ahelyett, hogy
+                nyomás alá helyezné őket. Később a vezetők jutalmazásának gondolatát hirdette, amikor munkatársaik
+                elérték a kitűzött célokat. Ösztönzőt kellett létrehozni, hogy az alkalmazottak megosszák szaktudásukat.
+
+                Ez növelte a személyzet képzésének szerepét. Gantt a „kényszerítés” és a „tudás” korszak hajnalának
+                végét képzelte el - jóval megelőzte korát. Ma, a digitalizáció megjelenésével az egész életen át tartó
+                tanulás már régóta elengedhetetlenné vált. A vállalati társadalmi felelősségvállalás egy másik Gantt
+                szívéhez közel álló terület volt, amely az utóbbi években ismét előtérbe került.
+                <br> Gantt munkájának két kulcsfontosságú aspektusavolt - a hatékonyság növelését és a felelősségének
+                teljesítését tűzte ki céljául.</p>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="w3-container w3-padding-32" id="cchart">
+        <h3 class="w3-border-bottom w3-border-light-grey w3-padding-16">cons</h3>
+        <p>Lets get in touch and talk about your next project.</p>
+        <form action="/action_page.php" target="_blank">
+            <input class="w3-input w3-border" type="text" placeholder="Name" required name="Name">
+            <input class="w3-input w3-section w3-border" type="text" placeholder="Email" required name="Email">
+            <input class="w3-input w3-section w3-border" type="text" placeholder="Subject" required name="Subject">
+            <input class="w3-input w3-section w3-border" type="text" placeholder="Comment" required name="Comment">
+            <button class="w3-button w3-black w3-section" type="submit">
+                <i class="fa fa-paper-plane"></i> SEND MESSAGE
+            </button>
+        </form>
+    </div>
+
+    <!-- End page content -->
+    </div>
+
+    <!-- Footer -->
+    <footer class="w3-center w3-black w3-padding-16">
+        <p>A felhasznált irodalmak hivatkozásai a szakdolgozatom végén feltüntetett Források szekcióban találhatók.</p>
+        <p> <b>Egyéb források:</b>
+            <href>https://en.wikipedia.org/wiki/Henry_Gantt</href> ;<br>
+            <href>https://www.pcmag.com/news/10-free-data-visualization-tools</href>
+            <href>https://technologyadvice.com/project-management/</href>
+            <href>http://www.moneyoutline.com/5-surefire-ways-to-keep-your-employees-motivated-at-work/</href>
+            <href>https://item24us.news/henry-l-gantt-engineer-and-project-management-pioneer/</href>
+        </p>
+    </footer>
+
+</body>
+
+</html>

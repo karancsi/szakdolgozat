@@ -1,0 +1,61 @@
+.jobcontainer{
+    background-color:#70a9cc;
+    
+}
+
+.fileinput{
+    height: 100px;
+     background-color: #bf944b;
+      fill-opacity: 60%; vertical-align: middle;
+}
+
+.inputbutton{
+    background-color: white; height: 40px;
+}
+
+.chart{
+    width:"500";
+     height:"800";
+     padding-top:20px;
+}
+
+div.tooltip {	
+    position: absolute;			
+    text-align: center;			
+    width: 80px;					
+    height: 45px;					
+    padding: 2px;				
+    font: 12px sans-serif;		
+    background: lightsteelblue;	
+    border: 0px;		
+    border-radius: 8px;			
+    pointer-events: none;			
+}
+
+.table {
+    position: absolute;	
+    width: 750 px;
+    margin:auto;
+    text-align: center;
+    table-layout: fixed;
+}
+
+table, tr,td {
+    padding :20px;
+    color: white;
+    border:1px solid #30302f;
+    border-collapse: collapse;
+    font-size :15 px;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    background: linear-gradient(top,#b36909 0%, #8f5a00 100%);
+    background:-webkit-linear-gradient(top,#b36909 0%, #8f5a00 100%);
+}
+
+td:hover{
+    background: #4d473e ;
+}
+
+.checkbox{
+    margin-top:-300;
+}
+

@@ -1,0 +1,94 @@
+{
+    
+    "jobs": [
+        {
+            "opID": 1,
+            "job": 1,
+            "opnumber": 2,
+            "from": 10,
+            "to": 12,
+            "value": 0.16,
+            "duedate": 12
+        },
+        {
+            "opID": 2,
+            "job": 1,
+            "opnumber": 3,
+            "from": 14,
+            "to": 22,
+            "value": 0.21,
+            "duedate": 20
+        },
+        {
+            "opID": 3,
+            "job": 2,
+            "opnumber": 1,
+            "from": 10,
+            "to": 12,
+            "value": 0.11,
+            "duedate": 13
+        },
+        {
+            "opID": 4,
+            "job": 2,
+            "opnumber": 2,
+            "from": 12,
+            "to": 24,
+            "value": 0.27,
+            "duedate": 25
+        },
+        {
+            "opID": 5,
+            "job": 2,
+            "opnumber": 3,
+            "from": 24,
+            "to": 30,
+            "value": 0.37,
+            "duedate": 30
+        },
+        {
+            "opID": 6,
+            "job": 3,
+            "opnumber": 1,
+            "from": 12,
+            "to": 16,
+            "value": 0.2,
+            "duedate": 16
+        },
+        {
+            "opID": 7,
+            "job": 3,
+            "opnumber": 2,
+            "from": 24,
+            "to": 28,
+            "value": 0.13,
+            "duedate": 29
+        }
+    ],
+    "machines": [
+        {
+            "id": 1,
+            "machine": "M1",
+            "jobsOnMachine": [3,6]
+        },
+        {
+            "id": 2,
+            "machine": "M2",
+            "jobsOnMachine": [
+                1,
+                4,
+                7
+            ]
+        },
+        {
+            "id": 3,
+            "machine": "M3",
+            "jobsOnMachine": [
+                2,
+                5
+            ]
+        }
+        
+    ]
+}
+
