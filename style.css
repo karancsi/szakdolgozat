@@ -85,3 +85,8 @@
    position: absolute;
    z-index: -1;
  }
+
+ .Gantt-h3{
+   background-color: #508aa1;
+   padding-left: 20px;
+ }

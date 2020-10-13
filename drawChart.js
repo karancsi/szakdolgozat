@@ -13,6 +13,10 @@ function drawDiagram(diadata) {
   var colors = ["#eb4034", "#41647d", "#7ba680"]
   var redgreen = ["red", "green"];
 
+  var tardinesscount = 0;
+  var tardinesssum = 0;
+  var tardinessmax = 0;
+
   var barHeight = 25
   var margin = ({ top: 30, right: 20, bottom: 10, left: 30 })
 
@@ -43,20 +47,20 @@ function drawDiagram(diadata) {
     .attr("transform", `translate(${margin.left},50)`)
     .call(d3.axisLeft(y).tickFormat(i => machines[i].machine).tickSizeOuter(0))
 
-  //Grey rect, when machine is not working
-  svg.append("defs")
-    .append("pattern")
-    .attr("width", d3.max(data, d => x(d.to)))
-    .attr("height", y.bandwidth())
-    .attr("x", 0)
-    .attr("y", 0)
-    .attr("id", "bg")
-    .append("image")
-    .attr("width", d3.max(data, d => x(d.to)))
-    .attr("height", y.bandwidth())
-    .attr("x", 0)
-    .attr("y", 0)
-    .attr("xlink:href", "zebra.png");
+    //Grey rect, when machine is not working
+    / svg.append("defs")
+      .append("pattern")
+      .attr("width", d3.max(data, d => x(d.to)))
+      .attr("height", y.bandwidth())
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("id", "bg")
+      .append("image")
+      .attr("width", d3.max(data, d => x(d.to)))
+      .attr("height", y.bandwidth())
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("xlink:href", "zebra.png");
 
   var backrect = svg.append("g")
     .attr("fill", "grey"/*function (d) {
@@ -67,7 +71,7 @@ function drawDiagram(diadata) {
     .join("rect")
     //.attr("stroke",function(d){return 'black';})
     .attr("x", (d) => x(0))
-    .attr("y", (d) => y(getMachineIndex(d)) + 50)
+    .attr("y", (d) => y(getMachineIndex(d) - 1) + 50)
     .attr("width", d3.max(data, d => x(d.to)))
     .attr("height", y.bandwidth())
 
@@ -78,7 +82,7 @@ function drawDiagram(diadata) {
     .data(data)
     .join("rect")
     .attr("x", (d) => x(d.from))
-    .attr("y", (d) => y(getMachineIndex(d)) + 50)
+    .attr("y", (d) => y(getMachineIndex(d) - 1) + 50)
     .attr("width", d => x(d.to) - x(d.from))
     .attr("height", y.bandwidth())
     .attr("fill", function (d) { return colors[d.job - 1] })
@@ -107,14 +111,18 @@ function drawDiagram(diadata) {
     .data(data)
     .join("rect")
     .attr("x", (d) => x(d.from) + 5)
-    .attr("y", (d) => y(getMachineIndex(d)) + 55)
+    .attr("y", (d) => y(getMachineIndex(d) - 1) + 55)
     .attr("width", d => x(d.to) - x(d.from) - 12)
     .attr("height", y.bandwidth() - 12)
     .attr("fill", function (d) {
       if (d.to <= d.duedate) {
         return "green";
       }
-      else { return "red" }
+      else {
+        tardinesscount +=1;
+        tardinesssum += (d.to-d.duedate);
+        tardinessmax = d3.max(data, d => (d.to-d.duedate));
+        return "red" }
     });
 
   //Information text on the operation
@@ -127,14 +135,15 @@ function drawDiagram(diadata) {
     .data(data)
     .join("text")
     .attr("x", d => (x(d.to) + x(d.from)) / 2)
-    .attr("y", (d) => y(getMachineIndex(d)) + margin.top + y.bandwidth())
+    .attr("y", (d) => y(getMachineIndex(d) - 1) + margin.top + y.bandwidth())
     .attr("dy", "0.35em")
     .attr("dx", -4)
     .text(function (d) {
+      var val0 = tardinessmax;
       var val = d.job;
       var val2 = d.opnumber;
       var val3 = d.duedate;
-      var v = val + "job " + val2 + "op " + val3;
+      var v = val0 + " je" + val + "job " + val2 + "op " + val3;
 
       return v;
     })
@@ -169,16 +178,18 @@ function drawDiagram(diadata) {
   document.getElementById("checkboxText").append(checkbox)
 }
 
-function getMachineIndex(d){
-  machines.forEach(element => {
-    element.jobsOnMachine.forEach(e => {
-       if (d.opID == e) {
-         console.log(element.id);
-      return (element.id);
+function getMachineIndex(d) {
+  for (i in machines) {
+    for (j in machines[i].jobsOnMachine) {
+      if (d.opID == machines[i].jobsOnMachine[j]) {
+
+        console.log(d.opID + "Job is on the " + machines[i].id + "machine");
+
+        return machines[i].id;
+
+      }
     }
-    });
-   
-  });
+  }
 }
 
 function checkUniqueJob(jobs) {
@@ -347,9 +358,42 @@ function createCrTable(selectedOption) {
           tr.appendChild(td);
         }
         tbl.appendChild(tr);
-
       }
 
+      break;
+    case "Tmax":
+      //checkUniqueJob(uniquejobs);
+      //  console.log(uniquejobs);
+      for (let index = 0; index < uniquejobs.length; index++) {
+        var tr = document.createElement('tr');
+        for (let j = 0; j < 2; j++) {
+          var td = document.createElement('td');
+          td.appendChild(document.createTextNode('\u0020'))
+          if (j == 0) {
+            td.innerHTML = uniquejobs[index] + "job";
+          }
+          else {
+            let tempjobs = [];
+            data.forEach(element => {
+              if (element.job == uniquejobs[index]) {
+                tempjobs.push(element);
+              }
+            });
+            if (((d3.max(tempjobs, function (d) {
+              return d.to;
+            })) - tempjobs[0].duedate) < 0) {
+              td.innerHTML = 0;
+            }
+            else {
+            }
+            td.innerHTML = (d3.max(tempjobs, function (d) {
+              return d.to;
+            })) - tempjobs[0].duedate;
+          }
+          tr.appendChild(td);
+        }
+        tbl.appendChild(tr);
+      }
       break;
   }
   body.appendChild(tbl);
@@ -357,7 +401,7 @@ function createCrTable(selectedOption) {
 }
 
 function createOcTable() {
-
+  machineUtilization();
   removeCrElements();
   var body = document.getElementsByTagName('body')[0];
   var tbl = document.createElement('table');
@@ -379,12 +423,19 @@ function createOcTable() {
       td.appendChild(document.createTextNode('\u0020'))
 
       if (i == 0 && j == 0) td.innerHTML = "Üzemkihasználtság:";
-      if (i == 0 && j == 1) td.innerHTML = "Üzemkihasználtság:";
+      if (i == 0 && j == 1) {
+
+        td.innerHTML = "Üzemkihasználtság:";
+      }
       if (i != 0 && j == 0) {
         c++;
         td.innerHTML = machines[c].machine;
       }
-      if (i != 0 && j == 1) td.innerHTML = "igen";
+      if (i != 0 && j == 1) {
+
+
+        td.innerHTML = "igen";
+      }
       console.log(td.innerHTML);
       tr.appendChild(td);
     }
@@ -440,4 +491,53 @@ function btnDueDate() {
   body.appendChild(tbl);
 }
 
+function machineUtilization() {
+  /*  let da = 0;
+    for (let m = 0; m < machines.length; m++) {
+      var tempsum = 0;
+      for (let mo = 0; mo < machines[m].jobsOnMachine; mo++) {
+        for (da = 0; da < data.length; da++) {
+          if (data[da].opID == machine[m].jobsOnMachine[mo]) {
+            tempsum += (data[d].to - data[d].from);
+            console.log(tempsum);
+          }
+  
+        }
+      }
+      console.log("asdfghjk" + tempsum);
+    }
+  */
 
+
+  //Setup idők összege, maximuma
+  var setupsum = 0;
+  var maxsetup = 0;
+  var setupcount = 0;
+  for (let index = 0; index < data.length; index++) {
+    setupsum += data[index].setup;
+    maxsetup = d3.max(data, d => (d.setup))
+    if (data[index].setup > 0) {
+      setupcount +=1;
+    }
+  }
+
+  //Várakozás idők
+
+  for (let j = 0; j < machines.length; j++) {
+    wait = d3.max(data, d => (d.to));
+    for (let i = 0; i < data.length; i++) {
+      for (let k = 0; k < machines[j].jobsOnMachine.length; k++) {
+        if (data[i].opID == machines[j].jobsOnMachine[k]) {
+          wait -= (data[i].to - data[i].from);
+
+        }
+      }
+    }
+  }
+
+
+
+
+
+
+}
