@@ -1,6 +1,6 @@
 .jobcontainer{
     background-color:#70a9cc;
-    
+    width: 100%;
 }
 
 .fileinput{
@@ -14,13 +14,13 @@
 }
 
 .chart{
-    width:"500";
-     height:"800";
+    width:21000px;
+     height:700px;
      padding-top:20px;
 }
 
 div.tooltip {	
-    position: absolute;			
+    position: relative;			
     text-align: center;			
     width: 80px;					
     height: 45px;					
@@ -42,6 +42,7 @@ div.tooltip {
 
 table, tr,td {
     padding :20px;
+    margin-bottom: 10px;
     color: white;
     border:1px solid #30302f;
     border-collapse: collapse;
@@ -59,3 +60,38 @@ td:hover{
     margin-top:-300;
 }
 
+.tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+  }
+  
+  .tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+    font-size: 17px;
+  }
+  
+  .tab button:hover {
+    background-color: #ddd;
+  }
+
+  .tab button.active {
+    background-color: #ccc;
+  }
+  
+  .tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+  }
+
+  #innerrect{
+    background-color: whitesmoke;
+  }

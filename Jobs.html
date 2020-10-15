@@ -1,4 +1,5 @@
 <html>
+
 <head>
     <link rel="stylesheet" href="w3-style.css">
     <link rel="stylesheet" href="jobstyle.css">
@@ -6,7 +7,7 @@
 
     <meta charset="UTF-8">
 
-<title>Jobs</title>
+    <title>Jobs</title>
 </head>
 
 <body>
@@ -19,7 +20,7 @@
             <div class="w3-right w3-hide-small">
                 <a href="Home.html" class="w3-bar-item w3-button">Short description</a>
                 <a href="Home.html" class="w3-bar-item w3-button">Gantt-chart</a>
-                <a href = "Jobs.html"  class="w3-bar-item w3-button">Jobs</a>
+                <a href="Jobs.html" class="w3-bar-item w3-button">Jobs</a>
                 <!--  <li> <button onclick="location.href = 'Jobs.html';">Jobs</button></li>
            -->
             </div>
@@ -27,48 +28,48 @@
     </div>
 
     <div class="jobcontainer">
-        <form  
+        <form id="jsonFile" name="jsonFile" enctype="multipart/form-data" method="post" class="fileinput">
 
-        id="jsonFile"
-        name="jsonFile"
-        enctype="multipart/form-data"
-        method="post"
-        class="fileinput"
-        >
-        
             <h2>Json File</h2>
-            <input class="w3-bar-item w3-button" id="fileinput" value="asd" placeholder="asdfgh"
-            class="inputbutton" type="file" ></input>
-            <label id="inputfile_name"class="w3-bar-item w3-button" class="inputbutton" for="fileinput">Choose File!</label>
-            <input
-                type="button"
-                class="w3-bar-item w3-button"
-                
-                id="btnLoad"
-                value="Load"
-                onclick="loadFile();"
-            />
-            <label id="lblLoad"class="w3-bar-item w3-button" class="inputbutton" for="btnLoad">Load</label>
-        
-    </form>
+            <input class="w3-bar-item w3-button" id="fileinput" value="asd" placeholder="asdfgh" class="inputbutton"
+                type="file"></input>
+            <label id="inputfile_name" class="w3-bar-item w3-button" class="inputbutton" for="fileinput">Choose
+                File!</label>
+            <input type="button" class="w3-bar-item w3-button" id="btnLoad" value="Load" onclick="loadFile();" />
+            <label id="lblLoad" class="w3-bar-item w3-button" class="inputbutton" for="btnLoad">Load</label>
+
+        </form>
 
 
-    <div id ="myDiv">
-        <svg name="chart" class="chart" ></svg>
-        <div id ="tooltip" style="position: absolute; opacity: 0;" class="tooltip"></div>
-        <script src="https://d3js.org/d3.v5.min.js"></script>
-        <script src="jquery.js"></script>
-        <script src="drawChart.js"></script>
+        <div id="chartDiv">
+            <svg name="chart" class="chart" ></svg>
+            <div id="tooltip" style="position: absolute; opacity: 0;" class="tooltip"></div>
+            <script src="https://d3js.org/d3.v5.min.js"></script>
+            <script src="drawChart.js"></script>
 
-        
+       
+        </div>
+        <div class="tab">
+            <button onclick="openTab(event, 'optimality')" class="w3-bar-item w3-button tablinks">Optimality criterion</button>
+            <button onclick="openTab(event, 'occupancy')" class="w3-bar-item w3-button tablinks">Occupancy rate</button>
+            <button onclick="openTab(event, 'due')" class="w3-bar-item w3-button tablinks">Due Dates</button>
+
+        </div>
+
+        <div  name="optimality" id="optimality" class="tabcontent">
+            <h3>Optimality crietion</h3> 
+          </div>
+
+          <div name="occupancy" id="occupancy" class="tabcontent">
+            <h3>Occupancy rate</h3>
+          </div>
+
+          <div name="due" id="due" class="tabcontent">
+            <h3>Due Date</h3>
+            <button id="innerrect" onclick="showDueDate()" class="w3-bar-item w3-button tablinks">Show in the Chart</button>
+          </div>
     </div>
-
-    <button onclick="btnCriterion()" class="w3-bar-item w3-button">Optimality criterion</button>
-    <button onclick="createOcTable()"  class="w3-bar-item w3-button">Occupancy rate</button>
-    <button onclick="btnDueDate()"  class="w3-bar-item w3-button">Due Dates</button>
-    
-</div>
-  <!-- <body class="container">
+    <!-- <body class="container">
     <div  >
         <div class="menu">
             <ul>
@@ -105,6 +106,5 @@
         </div>
         -->
 </body>
+
 </html>
-
-
