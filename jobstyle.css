@@ -14,8 +14,6 @@
 }
 
 .chart{
-    width:21000px;
-     height:700px;
      padding-top:20px;
 }
 
@@ -23,7 +21,7 @@ div.tooltip {
     position: relative;			
     text-align: center;			
     width: 80px;					
-    height: 45px;					
+    height: 60px;					
     padding: 2px;				
     font: 12px sans-serif;		
     background: lightsteelblue;	

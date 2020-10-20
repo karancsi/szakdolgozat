@@ -52,6 +52,7 @@
         <div class="tab">
             <button onclick="openTab(event, 'optimality')" class="w3-bar-item w3-button tablinks">Optimality criterion</button>
             <button onclick="openTab(event, 'occupancy')" class="w3-bar-item w3-button tablinks">Occupancy rate</button>
+            <button onclick="openTab(event, 'kpi')" class="w3-bar-item w3-button tablinks">KPI</button>
             <button onclick="openTab(event, 'due')" class="w3-bar-item w3-button tablinks">Due Dates</button>
 
         </div>
@@ -64,8 +65,13 @@
             <h3>Occupancy rate</h3>
           </div>
 
+          <div name="kpi" id="kpi" class="tabcontent">
+            <h3>KPI</h3>
+          </div>
+
           <div name="due" id="due" class="tabcontent">
             <h3>Due Date</h3>
+            <label>Due dates of jobs</label>
             <button id="innerrect" onclick="showDueDate()" class="w3-bar-item w3-button tablinks">Show in the Chart</button>
           </div>
     </div>

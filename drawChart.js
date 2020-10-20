@@ -2,6 +2,10 @@
 var chartWidth = 1000, chartHeight = 500, barPadding = 5;
 var data;
 var selectedOption;
+var showDueChecked = 0;
+var utilization = 0;
+var operationsum = 0;
+var utilizationmachine = [];
 var machines = [];
 var uniquejobs = [1];
 
@@ -9,13 +13,11 @@ var uniquejobs = [1];
 function drawDiagram(diadata) {
   data = diadata.jobs;
   machines = diadata.machines;
-  console.log(machines);
   checkUniqueJob(uniquejobs);
-  console.log(uniquejobs);
   var colors = d3.scaleLinear()
     .domain([0, uniquejobs.length])
-    .range(["#1f78b4","#b2df8a","#33a02c","#fb9a99","#e31a1c","#fdbf6f","#ff7f00","#cab2d6","#6a3d9a","#ffff99","#b15928",
-    "#8dd3c7","#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9","#bc80bd","#ccebc5","#ffed6f"])
+    .range(["#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928",
+      "#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"])
   var redgreen = ["red", "green"];
 
   var tardinesscount = 0;
@@ -55,20 +57,20 @@ function drawDiagram(diadata) {
     .attr("transform", `translate(${margin.left},50)`)
     .call(d3.axisLeft(y).tickFormat(i => machines[i].machine).tickSizeOuter(0))
 
-    //Grey rect, when machine is not working
-    / svg.append("defs")
-      .append("pattern")
-      .attr("width", d3.max(data, d => x(d.to)))
-      .attr("height", y.bandwidth())
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("id", "bg")
-      .append("image")
-      .attr("width", d3.max(data, d => x(d.to)))
-      .attr("height", y.bandwidth())
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("xlink:href", "zebra.png");
+  //Grey rect, when machine is not working
+  svg.append("defs")
+    .append("pattern")
+    .attr("width", d3.max(data, d => x(d.to)))
+    .attr("height", y.bandwidth())
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("id", "bg")
+    .append("image")
+    .attr("width", d3.max(data, d => x(d.to)))
+    .attr("height", y.bandwidth())
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("xlink:href", "zebra.png");
 
   var backrect = svg.append("g")
     .attr("fill", "grey"/*function (d) {
@@ -95,21 +97,14 @@ function drawDiagram(diadata) {
     .attr("height", y.bandwidth())
     .attr("id", (d) => d.opnumber + "rectID" + d.job)
     .attr("fill", function (d) { return d3.rgb(colors(d.job)) })
-    /*.style("opacity",function(d){
-        if(opacityID == d.job ){
-          return "1.0";
-        }
-        else  return "0.1";
-    })*/
     .on("mouseover", function (e) {
       var tooltipdiv = document.getElementById("tooltip");
-      console.log(x(e.to));
       if (document.getElementById("myCheck").checked == false) {
         tooltipdiv.style.opacity = 0.9;
-        tooltipdiv.innerHTML = "Duration: " + (e.to - e.from) + "<br> Due date: " + e.duedate;
+        tooltipdiv.innerHTML = "Setup time:" + e.setup + "<br> Duration: " + (e.to - e.from) + "<br> Due date: " + e.duedate + "<br> Prority:" + e.priority;
         tooltipdiv.style.left = x(e.from) + 10 + "px";
-        tooltipdiv.style.top = y(getMachineIndex(e)) + 180 + "px";
-        tooltipdiv.style.display = "block";
+        tooltipdiv.style.top = y(getMachineIndex(e) - 1) + 170 + "px";
+        tooltipdiv.style.display = "inline";
       }
       else {
         tooltipdiv.style.opacity = 0;
@@ -120,8 +115,8 @@ function drawDiagram(diadata) {
     })
     .on("click", function (e) {
       for (let index = 0; index < data.length; index++) {
-        var currentrect = document.getElementById(data[i].opnumber + "rectID" + data[i].job)
-        if (data[i].job != e.job) {
+        var currentrect = document.getElementById(data[index].opnumber + "rectID" + data[index].job)
+        if (data[index].job != e.job) {
           currentrect.style.opacity = 0.4;
         }
         else {
@@ -133,6 +128,9 @@ function drawDiagram(diadata) {
     })
 
   //Append innerrect, green or red, the job is in time or not
+  const max = d3.max(data, function (d) {
+    return d.to;
+  });
   var innerrects = svg.append("g")
     .attr("fill", "black")
     .selectAll("rect")
@@ -142,7 +140,7 @@ function drawDiagram(diadata) {
     .attr("y", (d) => y(getMachineIndex(d) - 1) + 55)
     .attr("width", d => x(d.to) - x(d.from) - 12)
     .attr("height", y.bandwidth() - 12)
-    .attr("id",(d) => d.opID + "innerrect" )
+    .attr("id", (d) => d.opID + "innerrect")
     .attr("fill", function (d) {
       if (d.to <= d.duedate) {
         return "green";
@@ -154,7 +152,38 @@ function drawDiagram(diadata) {
         return "red"
       }
     })
-    .attr("opacity",0.01);
+    .attr("opacity", 0.01)
+    .attr("display", d => (((d.to - d.from) / max) < 0.01) ? "none" : "block")
+    .on("mouseover", function (e) {
+      var tooltipdiv = document.getElementById("tooltip");
+      if (document.getElementById("myCheck").checked == false) {
+        tooltipdiv.style.opacity = 0.9;
+        tooltipdiv.innerHTML = "Setup time:" + e.setup + "<br> Duration: " + (e.to - e.from) + "<br> Due date: " + e.duedate + "<br> Prority:" + e.priority;
+        tooltipdiv.style.left = x(e.from) + 10 + "px";
+        tooltipdiv.style.top = y(getMachineIndex(e)) + 170 + "px";
+        tooltipdiv.style.display = "block";
+      }
+      else {
+        tooltipdiv.style.opacity = 0;
+      }
+    }).on("mouseout", function (e) {
+      var tooltipdiv = document.getElementById("tooltip");
+      tooltipdiv.style.display = "none";
+    });
+
+
+  //Append setuprects
+  var setuprect = svg.append("g")
+    .attr("fill", "#424647")
+    .selectAll("rect")
+    .data(data)
+    .join("rect")
+    .attr("x", (d) => x(d.from) - d.setup)
+    .attr("y", (d) => y(getMachineIndex(d) - 1) + 50)
+    .attr("width", d => d.setup)
+    .attr("height", y.bandwidth())
+    .attr("id", (d) => d.opID + "setup")
+
 
   //Information text on the operation
   svg.append("g")
@@ -166,20 +195,21 @@ function drawDiagram(diadata) {
     .data(data)
     .join("text")
     //.attr("x", d => (x(d.to) + x(d.from)) / 2)
-    .attr("x", d => (x(d.to)- 5) )
+    .attr("x", d => (x(d.to) - 5))
     .attr("y", (d) => y(getMachineIndex(d) - 1) + margin.top + y.bandwidth())
     .attr("dy", "0.35em")
     .attr("dx", -4)
-    .attr("id",(d) => d.opID + "innerrecttext" )
+    .attr("id", (d) => d.opID + "innerrecttext")
     .text(function (d) {
       var val0 = tardinessmax;
       var val = d.job;
       var val2 = d.opnumber;
       var val3 = d.duedate;
-      var v = "Job " + val + " Op " + val2 ;
+      var v = "Job " + val + " Op " + val2;
 
       return v;
     })
+    .attr("display", d => (((d.to - d.from) / max) < 0.1) ? "none" : "block");
 
 
   svg.append("g")
@@ -213,8 +243,11 @@ function drawDiagram(diadata) {
 
   //Draw KPI tables
   Criterion();
+  machineUtilization("jobleadtime");
+  machineUtilization("setups");
+  machineUtilization("allocation");
+  DueDate(tardinesscount, tardinessmax, tardinesssum);
   Occupancy();
-  DueDate();
 
 }
 
@@ -325,12 +358,13 @@ function createCrTable(selectedOption) {
   var tbl = document.createElement('table');
   tbl.className = "crtable"
   tbl.style = "table";
-  tbl.style.width = '80%';
+  tbl.style.width = '70%';
 
   var tbdy = document.createElement('tbody');
-
+  var labell = document.createElement('label');
   switch (selectedOption) {
     case "Cmax":
+      labell.innerHTML = "End of the last operation";
       var tr = document.createElement('tr');
       for (let index = 0; index < 3; index++) {
         var td = document.createElement('td');
@@ -342,18 +376,17 @@ function createCrTable(selectedOption) {
         else if (index == 1) {
           for (let i = 0; i < data.length; i++) {
             if (data[i].to == max) {
-              td.innerHTML = data[i].to;
+              td.innerHTML = "End on " + getMachineIndex(data[i]) + "machine";
             }
           }
         }
         else td.innerHTML = max;
-        console.log(td.innerHTML);
         tr.appendChild(td);
       }
       tbl.appendChild(tr);
-      console.log(tbdy.innerHTML);
       break;
     case "ΣCi":
+      labell.innerHTML = "Time of execution of operations";
       var sum = 0;
       for (let index = 0; index < data.length; index++) {
         sum += (data[index].to - data[index].from);
@@ -373,7 +406,7 @@ function createCrTable(selectedOption) {
       break;
 
     case "Lmax":
-      
+      labell.innerHTML = "Number of lateness per job";
       for (let index = 0; index < uniquejobs.length; index++) {
         var tr = document.createElement('tr');
         for (let j = 0; j < 2; j++) {
@@ -381,7 +414,7 @@ function createCrTable(selectedOption) {
           td.appendChild(document.createTextNode('\u0020'))
           if (j == 0) {
             //td.innerHTML = uniquejobs[index];
-            td.innerHTML = "Job " + uniquejobs[index] ;
+            td.innerHTML = "Job " + uniquejobs[index];
           }
           else {
             let tempjobs = [];
@@ -392,14 +425,14 @@ function createCrTable(selectedOption) {
             });
             td.innerHTML = ((d3.max(tempjobs, function (d) {
               return d.to;
-            })) - tempjobs[0].duedate);
+            })) - d3.max(tempjobs, d => d.duedate));
 
-            console.log("max" +(d3.max(tempjobs, function (d) {
+            console.log("max" + (d3.max(tempjobs, function (d) {
               return d.to;
             })));
 
             console.log(tempjobs);
-            console.log("due"+tempjobs[0].duedate);
+            console.log("due" + tempjobs[0].duedate);
           }
           tr.appendChild(td);
         }
@@ -408,17 +441,14 @@ function createCrTable(selectedOption) {
 
       break;
     case "Tmax":
-
+      labell.innerHTML = "Number of tardiness per job";
       for (let index = 0; index < uniquejobs.length; index++) {
         tr = document.createElement('tr');
         for (let j = 0; j < 2; j++) {
           var td = document.createElement('td');
           td.appendChild(document.createTextNode('\u0020'))
-         /* if(i==0 && j==0){
-            td.columnSpan = 1;
-          }*/
-          if (j == 0 && i!=0) {
-            td.innerHTML = "Job " + uniquejobs[index] ;
+          if (j == 0 && i != 0) {
+            td.innerHTML = "Job " + uniquejobs[index];
           }
           else {
             let tempjobs = [];
@@ -429,14 +459,14 @@ function createCrTable(selectedOption) {
             });
             if (((d3.max(tempjobs, function (d) {
               return d.to;
-            })) - tempjobs[0].duedate) < 0) {
+            })) - d3.max(tempjobs, d => d.duedate)) < 0) {
               td.innerHTML = 0;
             }
             else {
+              td.innerHTML = (d3.max(tempjobs, function (d) {
+                return d.to;
+              })) - d3.max(tempjobs, d => d.duedate);
             }
-            td.innerHTML = (d3.max(tempjobs, function (d) {
-              return d.to;
-            })) - tempjobs[0].duedate;
           }
           tr.appendChild(td);
         }
@@ -444,36 +474,32 @@ function createCrTable(selectedOption) {
       }
       break;
   }
+  div.appendChild(labell);
   div.appendChild(tbl);
 
 }
 
 function Occupancy() {
-  machineUtilization();
- // removeCrElements();
   var div = document.getElementsByName('occupancy')[0];
   var tbl = document.createElement('table');
   tbl.style = "table";
   tbl.id = "octable";
   tbl.style.width = '80%';
 
-  var tbdy = document.createElement('tbody');
   const max = d3.max(data, function (d) {
     return d.to;
   });
   var c = -1;
   for (let i = 0; i < machines.length + 1; i++) {
-
     var tr = document.createElement('tr');
-
     for (let j = 0; j < 2; j++) {
       var td = document.createElement('td');
       td.appendChild(document.createTextNode('\u0020'))
 
-      if (i == 0 && j == 0) td.innerHTML = "Üzemkihasználtság:";
+      if (i == 0 && j == 0) td.innerHTML = "Utilization:";
       if (i == 0 && j == 1) {
 
-        td.innerHTML = "Üzemkihasználtság:";
+        td.innerHTML = Math.round((utilization / (machines.length * d3.max(data, d => (d.to)))) * 100, 1) + "%";
       }
       if (i != 0 && j == 0) {
         c++;
@@ -482,13 +508,14 @@ function Occupancy() {
       if (i != 0 && j == 1) {
 
 
-        td.innerHTML = "igen";
+        td.innerHTML = Math.round((utilizationmachine[i] / max) * 100, 1) + "%";
       }
       tr.appendChild(td);
     }
     tbl.appendChild(tr);
   }
   div.appendChild(tbl);
+  drawStatisticsDiagram();
 }
 
 //Delete elment 
@@ -504,97 +531,224 @@ function removeCrElements() {
   selelem.remove();
 }
 
-function DueDate() {
+function DueDate(tardinesscount, tardinessmax, tardinesssum) {
+  var jobintime = [];
+  jobintime.push(operationsum);
+  jobintime.push(tardinesscount);
+  jobintime.push(operationsum - tardinesscount);
+  console.log("sdfghjj" + jobintime);
   var div = document.getElementsByName('due')[0];
   var tbl = document.createElement('table');
   tbl.className = "crtable"
   tbl.style = "table";
   tbl.style.width = '40%';
-  for (let index = 0; index < uniquejobs.length; index++) {
-    var tr = document.createElement('tr');
-    for (let j = 0; j < 2; j++) {
-      var td = document.createElement('td');
-      td.appendChild(document.createTextNode('\u0020'))
-      if (j == 0) {
-        //td.innerHTML = uniquejobs[index];
-        td.innerHTML = " job" + uniquejobs[index];
-      }
-      else {
-        data.forEach(element => {
-          if (element.job == uniquejobs[index]) {
-            td.innerHTML = element.duedate;
-          }
-        });
-      }
-      tr.appendChild(td)
-    }
-    tbl.appendChild(tr);
-
+  var buttondue = document.createElement('button');
+  buttondue.innerHTML = "Representation on a chart"
+  buttondue.onclick = function () {
+    drawPieDiagram(jobintime, "due");
   }
-  div.appendChild(tbl);
 
+  for (let i = 0; i < 2; i++) {
+    if (i == 0) {
+      for (let index = 0; index < uniquejobs.length; index++) {
+        var tr = document.createElement('tr');
+        for (let j = 0; j < 2; j++) {
+          var td = document.createElement('td');
+          td.appendChild(document.createTextNode('\u0020'))
+          if (j == 0) {
+            //td.innerHTML = uniquejobs[index];
+            td.innerHTML = " job" + uniquejobs[index];
+          }
+          else {
+            data.forEach(element => {
+              if (element.job == uniquejobs[index]) {
+                td.innerHTML = element.duedate;
+              }
+            });
+          }
+          tr.appendChild(td)
+        }
+        tbl.appendChild(tr);
+      }
+      div.appendChild(tbl);
+      div.appendChild(buttondue);
+    }
+    else {
+      for (let index = 0; index < 3; index++) {
+        var tr = document.createElement('tr');
+        for (let j = 0; j < 2; j++) {
+          var td = document.createElement('td');
+          td.appendChild(document.createTextNode('\u0020'))
+          if (j == 0 && index == 0) td.innerHTML = "Number of delays";
+          if (j == 0 && index == 1) td.innerHTML = "Max of delays";
+          if (j == 0 && index == 2) td.innerHTML = "Sum of delays";
+          if (j == 1 && index == 0) td.innerHTML = tardinesscount;
+          if (j == 1 && index == 1) {
+            for (let k = 0; k < data.length; k++) {
+              var tardinessmaxjob = 0;
+              if ((data[k].to - data[k].duedate) == tardinessmax) {
+                tardinessmaxjob = data[k].job;
+              }
+            }
+            td.innerHTML = tardinessmax + "(Job " + tardinessmaxjob + ")";
+          }
+          if (j == 1 && index == 2) td.innerHTML = tardinesssum;
+
+          tr.appendChild(td)
+        }
+        tbl.appendChild(tr);
+      }
+      div.appendChild(tbl);
+    }
+  }
 }
 
-function machineUtilization() {
-  /*  let da = 0;
-    for (let m = 0; m < machines.length; m++) {
-      var tempsum = 0;
-      for (let mo = 0; mo < machines[m].jobsOnMachine; mo++) {
-        for (da = 0; da < data.length; da++) {
-          if (data[da].opID == machine[m].jobsOnMachine[mo]) {
-            tempsum += (data[d].to - data[d].from);
-            console.log(tempsum);
-          }
-  
-        }
-      }
-      console.log("asdfghjk" + tempsum);
-    }
-  */
+function machineUtilization(sel) {
+  //Befoglaló tábla
+  var div = document.getElementsByName('kpi')[0];
+  var tbl = document.createElement('table');
+  tbl.style = "table";
+  tbl.id = "kpitable";
+  tbl.style.width = '80%';
 
 
-  //Setup idők összege, maximuma
-  var setupsum = 0;
-  var maxsetup = 0;
-  var setupcount = 0;
-  for (let index = 0; index < data.length; index++) {
-    setupsum += data[index].setup;
-    maxsetup = d3.max(data, d => (d.setup))
-    if (data[index].setup > 0) {
-      setupcount += 1;
-    }
+  //SZÁMÍTÁSOK
+  //Rendszer terheltsége
+  operationsum = 0;
+  for (let i = 0; i < data.length; i++) {
+    console.log("Data" + data);
+    operationsum += 1;
   }
-
   //Várakozás idők gépenként
+  //Üzemkihasználtság gépenként
+  //Terheltség gépenként
+  utilization = (machines.length * d3.max(data, d => (d.to)))
+  var operationsummachine = []; //Legelső eleme az összes operation
+  operationsummachine.push(operationsum);
   for (let j = 0; j < machines.length; j++) {
     wait = d3.max(data, d => (d.to));
+    var operationsumpermachine = 0;
     for (let i = 0; i < data.length; i++) {
       for (let k = 0; k < machines[j].jobsOnMachine.length; k++) {
         if (data[i].opID == machines[j].jobsOnMachine[k]) {
           wait -= (data[i].to - data[i].from);
-
+          operationsumpermachine += 1;
         }
       }
     }
+    utilization -= wait;
+    utilizationmachine.push(d3.max(data, d => (d.to)) - wait);
+    operationsummachine.push(operationsumpermachine);
   }
 
-  //Rendszer terheltsége
-  var operationsum = 0;
-  for (let i = 0; i < data.length; i++) {
-    operationsum += 1;
-  }
-
-  //Jobok átfutási ideje
-  var jobleadtime;
-  for (let i = 0; i < uniquejobs.length; i++) {
-    jobleadtime = 0;
-    for (let j = 0; j < data.length; j++) {
-      if (data[j] == uniquejobs[i]) {
-        jobleadtime += (data[j].to - data[j].from);
+  //SZEPARÁLVA
+  switch (sel) {
+    case "jobleadtime":
+      //Jobok átfutási ideje
+      //Gyártási átfutási idő - jobonként
+      let jobleadtime = [];
+      //Termelési átfutási idő - jobonként
+      let jobltwithsetup = [];
+      for (let i = 0; i < uniquejobs.length; i++) {
+        var jobleadtimes = 0;
+        var jobltwithsetups = 0;
+        for (let j = 0; j < data.length; j++) {
+          if (data[j].job == uniquejobs[i]) {
+            jobleadtimes += (data[j].to - data[j].from);
+            jobltwithsetups += (data[j].to - data[j].from) + data[j].setup;
+          }
+        }
+        jobleadtime.push(jobleadtimes);
+        jobltwithsetup.push(jobltwithsetups);
       }
-    }
-    console.log(jobleadtime);
+
+      var labelleadtime = document.createElement('label');
+      labelleadtime.innerHTML = "Lead time of jobs, without and with setup time";
+      for (let i = 0; i < uniquejobs.length; i++) {
+        var tr = document.createElement('tr');
+        for (let j = 0; j < 3; j++) {
+          var td = document.createElement('td');
+          td.appendChild(document.createTextNode('\u0020'))
+
+          if (j == 0) td.innerHTML = "Job " + uniquejobs[i];
+          if (j == 1) td.innerHTML = jobleadtime[i];
+          if (j == 2) td.innerHTML = jobltwithsetup[i];
+
+          tr.appendChild(td);
+        }
+        tbl.appendChild(tr);
+      }
+      div.appendChild(labelleadtime);
+      break;
+
+    case "setups":
+      //Setup idők összege, maximuma, darabszáma
+      var setupsum = 0;
+      var maxsetup = 0;
+      var setupcount = 0;
+      for (let index = 0; index < data.length; index++) {
+        setupsum += data[index].setup;
+        maxsetup = d3.max(data, d => (d.setup))
+        if (data[index].setup > 0) {
+          setupcount += 1;
+        }
+      }
+      var labelsetup = document.createElement('label');
+      labelsetup.innerHTML = "Sum, max of setup times, number of setups";
+      for (let i = 0; i < 3; i++) {
+        var tr = document.createElement('tr');
+        for (let j = 0; j < 2; j++) {
+          var td = document.createElement('td');
+          td.appendChild(document.createTextNode('\u0020'))
+
+          if (j == 0 && i == 0) td.innerHTML = "Sum";
+          if (j == 1 && i == 0) td.innerHTML = setupsum;
+          if (j == 0 && i == 1) td.innerHTML = "Max";
+          if (j == 1 && i == 1) td.innerHTML = maxsetup;
+          if (j == 0 && i == 2) td.innerHTML = "Count";
+          if (j == 1 && i == 2) td.innerHTML = setupcount;
+
+          tr.appendChild(td);
+        }
+        tbl.appendChild(tr);
+      }
+      div.appendChild(labelsetup);
+
+      break;
+
+    case "allocation":
+      var labeluti = document.createElement('label');
+      labeluti.innerHTML = "System/ Machine allocation";
+      var buttonuti = document.createElement('button');
+      buttonuti.innerHTML = "Representation on a chart"
+      buttonuti.onclick = function () {
+        drawPieDiagram(operationsummachine, "kpi");
+      }
+      for (let i = 0; i < operationsummachine.length; i++) {
+        var tr = document.createElement('tr');
+        for (let j = 0; j < 2; j++) {
+          var td = document.createElement('td');
+          td.appendChild(document.createTextNode('\u0020'))
+
+          if (j == 0 && i == 0) td.innerHTML = "System allocation rate";
+          if (j == 1 && i == 0) td.innerHTML = operationsummachine[i];
+          if (j == 0 && i != 0) td.innerHTML = machines[i - 1].machine;
+          if (j == 1 && i != 0) td.innerHTML = operationsummachine[i];
+
+          tr.appendChild(td);
+        }
+        tbl.appendChild(tr);
+      }
+      div.appendChild(labeluti);
+      div.appendChild(buttonuti);
+
+
+      break;
+
   }
+  div.appendChild(tbl);
+
+
 }
 
 //KPI tabpanel
@@ -613,10 +767,226 @@ function openTab(evt, id) {
 }
 
 //Show red-green innerrects in the chart
-function showDueDate(){
-  for (let i = 0; i < data.length; i++) {
-    var currentinnerrect = document.getElementById(data[i].opID+"innerrect");
-    currentinnerrect.style.opacity = 1.0;
+function showDueDate() {
 
+  showDueChecked += 1;
+  console.log(showDueChecked);
+  for (let i = 0; i < data.length; i++) {
+    var currentinnerrect = document.getElementById(data[i].opID + "innerrect");
+    if (showDueChecked > 0 && showDueChecked % 2 == 0) {
+      currentinnerrect.style.opacity = 0.0;
+    }
+    else currentinnerrect.style.opacity = 1.0;
   }
 }
+
+
+function drawStatisticsDiagram() {
+  var waitarray = [];
+  width = 700;
+  height = 500;
+  //Várakozás idők gépenként
+  for (let j = 0; j < machines.length; j++) {
+    wait = d3.max(data, d => (d.to));
+    for (let i = 0; i < data.length; i++) {
+      for (let k = 0; k < machines[j].jobsOnMachine.length; k++) {
+        if (data[i].opID == machines[j].jobsOnMachine[k]) {
+          wait -= (data[i].to - data[i].from);
+
+        }
+      }
+    }
+    waitarray.push(wait);
+  }
+  margin = ({ top: 20, right: 0, bottom: 30, left: 40 })
+  const svg = d3.create("svg")
+    .attr("viewBox", [0, 0, width, height])
+    .call(d3.zoom().on("zoom", function () {
+      svg.attr("transform", d3.event.transform)
+    }))
+
+  x = d3.scaleBand()
+    .domain(machines.map(d => d.machine))
+    .range([margin.left, width - margin.right])
+    .padding(0.1)
+
+  y = d3.scaleLinear()
+    .domain([0, d3.max(waitarray, (d) => d)])
+    .range([500 - margin.bottom, margin.top])
+
+  const g = svg.append("g")
+    .attr("class", "bars")
+    .attr("fill", "red")
+    .selectAll("rect")
+    .data(waitarray)
+    .join("rect")
+    .attr("x", (d, i) => x(machines[i].machine) + 70)
+    .attr("y", (d, i) => y(d))
+    .attr("height", (d) => y(0) - y(d))
+    .attr("width", x.bandwidth() - 50)
+    .attr("transform",
+      "translate(" + margin.left + "," + ")");
+
+  xAxis = g => g
+    .attr("transform", `translate(0,${height - margin.bottom})`)
+    .call(d3.axisBottom(x).tickSizeOuter(0))
+
+  yAxis = g => g
+    .attr("transform", `translate(${margin.left},0)`)
+    .call(d3.axisLeft(y))
+    .call(g => g.select(".domain").remove())
+
+  svg.append("g")
+    .attr("class", "x-axis")
+    .call(xAxis);
+
+  svg.append("g")
+    .attr("class", "y-axis")
+    .call(yAxis);
+  document.getElementById("occupancy").appendChild(svg.node());
+}
+
+
+function drawPieDiagram(piechartdata, location) {
+  var width = 450
+  height = 450
+  margin = 40
+
+  var radius = Math.min(width, height) / 2 - margin
+
+  var svg = d3.select("#" + location)
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+  var chartdata = piechartdata;
+  chartdata.splice(0, 1);
+
+  var color = d3.scaleOrdinal()
+    .domain(chartdata)
+    .range(d3.schemeSet2);
+
+  var pie = d3.pie()
+    .value(function (d) { return d.value; })
+  var data_ready = pie(d3.entries(chartdata))
+
+  var arcGenerator = d3.arc()
+    .innerRadius(0)
+    .outerRadius(radius)
+
+  svg
+    .selectAll('mySlices')
+    .data(data_ready)
+    .enter()
+    .append('path')
+    .attr('d', arcGenerator)
+    .attr('fill', function (d) { return (color(d.value + Math.random())) })
+    .attr("stroke", "black")
+    .style("stroke-width", "2px")
+    .style("opacity", 0.7)
+    .on("mouseover", function (e) {
+      if (location == "kpi") {
+        var tooltipslice = document.getElementById("tooltip");
+        tooltipslice.style.opacity = 0.9;
+        tooltipslice.innerHTML = machines[i].machine + " " + e.value + " op" + (e.value / chartdata0) * 100 + "%";
+        tooltipslice.style.left = x(e.value) + 10 + "px";
+        tooltipslice.style.top = y(e.value) + 170 + "px";
+        tooltipslice.style.display = "inline";
+        console.log(x(e.value) + 10);
+        console.log(y(e.value) + 170);
+      }
+      if (location == "due") {
+
+      }
+
+    }).on("mouseout", function (e) {
+      var tooltipslice = document.getElementById("tooltip");
+      tooltipslice.style.display = "none";
+    })
+
+  // Now add the annotation. Use the centroid method to get the best coordinates
+  svg
+    .selectAll('mySlices')
+    .data(data_ready)
+    .enter()
+    .append('text')
+    .text(function (d, i) {
+      if (location == "kpi") {
+        return machines[i].machine + " " + d.value + " op"
+      }
+      else return d.value + " operation"
+    })
+    .attr("transform", function (d) { return "translate(" + arcGenerator.centroid(d) + ")"; })
+    .attr("display", function () {
+      if (chartdata.length > 10) return "none"
+      else return "block"
+    })
+    .style("text-anchor", "middle")
+    .style("font-size", 14)
+
+  var buttonbar = document.createElement('button');
+  buttonbar.innerHTML = "Change to bar chart"
+  buttonbar.onclick = function () {
+    svg.display = "none";
+    if (location == "kpi") drawAllocationBarDiagram(piechartdata);
+   // else drawDueBarDiagram();
+  }
+  var div = document.getElementsByName(location)[0];
+  div.appendChild(buttonallocationbar);
+}
+
+function drawAllocationBarDiagram(operationsummachine) {
+  width = 500;
+  height = 300;
+
+  //Data
+  var chartdata = operationsummachine;
+
+  margin = ({ top: 20, right: 0, bottom: 30, left: 40 })
+  const svg = d3.create("svg")
+    .attr("viewBox", [0, 0, width, height])
+
+  x = d3.scaleBand()
+    .domain(machines.map(d => d.machine))
+    .range([margin.left, width - margin.right])
+    .padding(0.1)
+
+  y = d3.scaleLinear()
+    .domain([0, d3.max(chartdata, (d) => d)])
+    .range([height - margin.bottom, margin.top])
+
+  const g = svg.append("g")
+    .attr("class", "bars")
+    .attr("fill", "red")
+    .selectAll("rect")
+    .data(chartdata)
+    .join("rect")
+    .attr("x", (d, i) => x(machines[i].machine))
+    .attr("y", (d, i) => y(d))
+    .attr("height", (d) => y(0) - y(d))
+    .attr("width", x.bandwidth() - 50)
+    .attr("transform",
+      "translate(" + margin.left + "," + ")");
+
+  xAxis = g => g
+    .attr("transform", `translate(0,${height - margin.bottom})`)
+    .call(d3.axisBottom(x).tickSizeOuter(0))
+
+  yAxis = g => g
+    .attr("transform", `translate(${margin.left},0)`)
+    .call(d3.axisLeft(y))
+    .call(g => g.select(".domain").remove())
+
+  svg.append("g")
+    .attr("class", "x-axis")
+    .call(xAxis);
+
+  svg.append("g")
+    .attr("class", "y-axis")
+    .call(yAxis);
+  document.getElementById("kpi").appendChild(svg.node());
+}
+
+

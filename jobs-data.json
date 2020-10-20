@@ -38,7 +38,7 @@
       "from": 12,
       "to": 20,
       "duedate": 25,
-      "setup": 2,
+      "setup": 3,
       "priority": 1
     },
     {
@@ -68,7 +68,7 @@
       "from": 21,
       "to": 26,
       "duedate": 29,
-      "setup": 1,
+      "setup": 8,
       "priority": 1
     },
     {
@@ -78,7 +78,7 @@
       "from": 28,
       "to": 35,
       "duedate": 35,
-      "setup": 1,
+      "setup": 6,
       "priority": 1
     },
     {
@@ -88,7 +88,7 @@
       "from": 36,
       "to": 40,
       "duedate": 39,
-      "setup": 1,
+      "setup": 4,
       "priority": 1
     }
   ],

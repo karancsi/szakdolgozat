@@ -95,7 +95,6 @@
     width:90%;
     margin: auto;
     height: 70%;
-    overflow-y: scroll;
     overflow-x: scroll;
     background-image: linear-gradient(#95b3c7,#819fb3);
  }
