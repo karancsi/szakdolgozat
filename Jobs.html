@@ -40,40 +40,47 @@
 
         </form>
 
+        <div class="tab">
+            <button onclick="mainopenTab(event, 'list')" class="w3-bar-item w3-button tablinks">List</button>
+            <button onclick="mainopenTab(event, 'chartDiv')" class="w3-bar-item w3-button tablinks">Chart</button>
+        </div>
+        <div id="chartDiv"class="maintabcontent">
 
-        <div id="chartDiv">
-            <svg name="chart" class="chart" ></svg>
+            <svg name="chart" id="chart" class="chart"></svg>
             <div id="tooltip" style="position: absolute; opacity: 0;" class="tooltip"></div>
             <script src="https://d3js.org/d3.v5.min.js"></script>
             <script src="drawChart.js"></script>
-
-       
         </div>
+        <div id="list" class="maintabcontent"><h3>asdfghjhjklkSDFGHJK</h3></div>
+
         <div class="tab">
-            <button onclick="openTab(event, 'optimality')" class="w3-bar-item w3-button tablinks">Optimality criterion</button>
+            <button onclick="openTab(event, 'optimality')" class="w3-bar-item w3-button tablinks">Optimality
+                criterion</button>
             <button onclick="openTab(event, 'occupancy')" class="w3-bar-item w3-button tablinks">Occupancy rate</button>
             <button onclick="openTab(event, 'kpi')" class="w3-bar-item w3-button tablinks">KPI</button>
             <button onclick="openTab(event, 'due')" class="w3-bar-item w3-button tablinks">Due Dates</button>
 
         </div>
+        <div class="disp">            
+        <div name="optimality" id="optimality" class="tabcontent">
+            <h3>Optimality crietion</h3>
+        </div>
 
-        <div  name="optimality" id="optimality" class="tabcontent">
-            <h3>Optimality crietion</h3> 
-          </div>
-
-          <div name="occupancy" id="occupancy" class="tabcontent">
+        <div name="occupancy" id="occupancy" class="tabcontent">
             <h3>Occupancy rate</h3>
-          </div>
+        </div>
 
-          <div name="kpi" id="kpi" class="tabcontent">
+        <div name="kpi" id="kpi" class="tabcontent">
             <h3>KPI</h3>
-          </div>
+        </div>
 
-          <div name="due" id="due" class="tabcontent">
+        <div name="due" id="due" class="tabcontent">
             <h3>Due Date</h3>
             <label>Due dates of jobs</label>
-            <button id="innerrect" onclick="showDueDate()" class="w3-bar-item w3-button tablinks">Show in the Chart</button>
-          </div>
+            <button id="innerrect" onclick="showDueDate()" class="w3-bar-item w3-button tablinks">Show in the
+                Chart</button>
+        </div>
+    </div>  
     </div>
     <!-- <body class="container">
     <div  >

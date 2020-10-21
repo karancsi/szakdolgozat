@@ -1,6 +1,6 @@
 {
 
-  "jobs": [
+  "operations": [
     {
       "opID": 1,
       "job": 1,
@@ -16,7 +16,7 @@
       "job": 1,
       "opnumber": 2,
       "from": 10,
-      "to": 14,
+      "to": 140,
       "duedate": 16,
       "setup": 0,
       "priority": 0
@@ -86,7 +86,7 @@
       "job": 3,
       "opnumber": 3,
       "from": 36,
-      "to": 40,
+      "to": 1100,
       "duedate": 39,
       "setup": 4,
       "priority": 1

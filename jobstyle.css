@@ -32,10 +32,10 @@ div.tooltip {
 
 .table {
     position: absolute;	
-    width: 750 px;
     margin:auto;
     text-align: center;
     table-layout: fixed;
+ 
 }
 
 table, tr,td {
@@ -90,6 +90,17 @@ td:hover{
     border-top: none;
   }
 
+  .maintabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+  }
+
   #innerrect{
     background-color: whitesmoke;
+  }
+
+  .disp {
+    display:inline-block;
   }
