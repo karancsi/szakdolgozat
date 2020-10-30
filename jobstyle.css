@@ -20,8 +20,8 @@
 div.tooltip {	
     position: relative;			
     text-align: center;			
-    width: 80px;					
-    height: 60px;					
+    width: 140px;					
+    height:80px;					
     padding: 2px;				
     font: 12px sans-serif;		
     background: lightsteelblue;	
@@ -101,6 +101,4 @@ td:hover{
     background-color: whitesmoke;
   }
 
-  .disp {
-    display:inline-block;
-  }
+

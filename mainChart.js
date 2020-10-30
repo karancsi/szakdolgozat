@@ -6,8 +6,9 @@ var uniquejobs = [1];
 
 //Kihasználtság
 var utilization = 0; //Rendszer kihasználtsága, összesen mennyit ment, a kapacitáshoz képest
+var utilizationsum = 0; //Rendszer összterheltsége
 var utilizationmachine = []; //Gépenkénti kihasználtság (mennyit ment a gép)
-
+var maxtopermachine = [];
 
 //Terhelés
 var operationsum = 0; //Összes operáció
@@ -17,6 +18,11 @@ var operationsummachine = []; //Gépenkénti operation szám
 var showDueChecked = 0;
 var jobintime = []; //mennyi munka van határidőn belül
 var tardinessjob = []; //munkánkénti csúszások mértéke
+
+//Tartalékidő
+var sparetime = 0;
+var sparetimeoperation = [];
+var sparetimecritical = [];
 
 //Setup idők összege, maximuma, darabszáma
 var setupsum = 0;
@@ -49,12 +55,21 @@ let jobltwithsetup = [];
 //Inicializáltság vizsgálat
 var isarraysinitialized = false;
 isopsuminitialized = false;
+var isutilizationinitialized = false;
+
+//xAxis tick numbers
+var tickdata = [];
 
 //Gantt diagram kirajzolása
 function drawDiagram(diadata) {
-  data = diadata.operations;
-  machines = diadata.machines;
- 
+  data = diadata.Operations;
+  machines = diadata.Resources;
+  var startdate = new Date(diadata.StartDateTime);
+  console.log(startdate);
+  console.log(d3.max(data, d => d.EndTimeInInt));
+  for (let i = 0; i < d3.max(data, d => d.EndTimeInInt); i++) {
+    tickdata.push("" + i + "");
+  }
 
   checkUniqueJob(uniquejobs);
   var colors = d3.scaleLinear()
@@ -62,19 +77,20 @@ function drawDiagram(diadata) {
     .range(["#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928",
       "#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"])
 
-  var barHeight = 25
-  var margin = ({ top: 30, right: 20, bottom: 10, left: 30 })
+  var barHeight = 18
+  var margin = ({ top: 30, right: 20, bottom: 10, left: 60 })
 
   var height = Math.ceil((data.length + 0.1) * barHeight) + margin.top + margin.bottom
-  var width = d3.max(data, d => d.to) + 1200
+  var width = d3.max(data, d => d.EndTimeInInt) + 1200
 
   var svg = d3.select("svg")
-    .attr("width", d3.max(data, d => d.to) + 1200)
+    .attr("width", d3.max(data, d => d.EndTimeInInt) + 1200)
     .attr("height", chartHeight + "px")
     .style("display", "block")
 
   var x = d3.scaleLinear()
-    .domain([0, d3.max(data, d => d.to)])
+    //.domain([0, d3.max(data, d => d.EndTimeInInt)])
+    .domain([tickdata[0], tickdata[tickdata.length - 1]])
     .range([margin.left, width - margin.right])
 
   var y = d3.scaleBand()
@@ -86,14 +102,28 @@ function drawDiagram(diadata) {
 
   xAxis = g => g
     .attr("transform", `translate(0,${margin.top + 50})`)
-    .call(d3.axisTop(x).ticks(d3.max(data, d => d.to)/2, data.format))
-    .call(g => g.select(".domain").remove())
+    //.call(d3.axisTop(x).ticks(d3.max(data, d => d.EndTimeInInt/20), data.format))
+    .call(d3.axisTop(x).ticks(tickdata.length, data.format))
+
+    //.call(g => g.selectAll('.tick line').remove())
+    .selectAll('.tick text')
+    .call(function (t) {
+      t.each(function (d) {
+        var self = d3.select(this);
+        var s = parseInt(self.text());
+        if (s % 6 != 0) {
+          self.select('.tick line').remove();
+          self.attr("display", "none");
+        }
+      })
+    })
+  // .call(g => g.select(".domain").remove())
 
   yAxis = g => g
     .attr("transform", `translate(${margin.left},50)`)
-    .call(d3.axisLeft(y).tickFormat(i => machines[i].machine).tickSizeOuter(0))
+    .call(d3.axisLeft(y).tickFormat(i => machines[i].Name).tickSizeOuter(0))
 
-    //Date per 24 hour
+  //Date per 24 hour
   svg.append("svg:g")
     .attr("class", "x axis")
     .attr("transform", "translate(0," + height + ")")
@@ -104,14 +134,13 @@ function drawDiagram(diadata) {
       t.each(function (d) {
         var self = d3.select(this);
         var s = parseInt(self.text());
-        console.log(s);
-                if (s % 24 == 0) {
+        if (s % 24 == 0) {
           self.text(null);
           self.append("tspan")
             .attr("x", 0)
-            .attr("dy", ".8em")
-            .text(s);
-        
+            .attr("dy", "-1.6em")
+            .text(startdate.getFullYear() + ". " + startdate.getMonth() + ". " + startdate.getDate() + ".");
+          startdate = addDays(startdate, 1);
         }
       })
     })
@@ -119,29 +148,35 @@ function drawDiagram(diadata) {
   //Grey rect, when machine is not working
   svg.append("defs")
     .append("pattern")
-    .attr("width", d3.max(data, d => x(d.to)))
+    .attr("width", d3.max(data, d => x(d.EndTimeInInt)))
     .attr("height", y.bandwidth())
     .attr("x", 0)
     .attr("y", 0)
     .attr("id", "bg")
     .append("image")
-    .attr("width", d3.max(data, d => x(d.to)))
+    .attr("width", d3.max(data, d => x(d.EndTimeInInt)))
     .attr("height", y.bandwidth())
     .attr("x", 0)
     .attr("y", 0)
-    .attr("xlink:href", "zebra.png");
+    .attr("xlink:href", "zebra.png")
+
 
   var backrect = svg.append("g")
-    .attr("fill", "grey"/*function (d) {
-      return "url(#bg)";
-    }*/)
+    .attr("fill", "grey")
+    .attr("opacity", 0.7)
     .selectAll("rect")
     .data(data)
     .join("rect")
     .attr("x", (d) => x(0))
     .attr("y", (d) => y(getMachineIndex(d) - 1) + 50)
-    .attr("width", d3.max(data, d => x(d.to)))
+    .attr("width", d3.max(data, d => x(d.EndTimeInInt)))
     .attr("height", y.bandwidth())
+    .on("click", function (e) {
+      for (let index = 0; index < data.length; index++) {
+        var currentrect = document.getElementById(data[index].OperationIndex + "rectID" + data[index].JobId);
+        currentrect.style.opacity = 1.0;
+      }
+    })
 
   //Different colored rects, when machine is working
   var rects = svg.append("g")
@@ -149,18 +184,20 @@ function drawDiagram(diadata) {
     .selectAll("rect")
     .data(data)
     .join("rect")
-    .attr("x", (d) => x(d.from))
+    .attr("x", (d) => x(d.StartTimeInInt))
     .attr("y", (d) => y(getMachineIndex(d) - 1) + 50)
-    .attr("width", d => x(d.to) - x(d.from))
+    .attr("width", d => x(d.EndTimeInInt) - x(d.StartTimeInInt))
     .attr("height", y.bandwidth())
-    .attr("id", (d) => d.opnumber + "rectID" + d.job)
-    .attr("fill", function (d) { return d3.rgb(colors(d.job)) })
+    .attr("id", (d) => d.OperationIndex + "rectID" + d.JobId)
+    .attr("fill", function (d) { return d3.rgb(colors(d.JobId)) })
     .on("mouseover", function (e) {
       var tooltipdiv = document.getElementById("tooltip");
       if (document.getElementById("myCheck").checked == false) {
         tooltipdiv.style.opacity = 0.9;
-        tooltipdiv.innerHTML = "Setup time:" + e.setup + "<br> Duration: " + (e.to - e.from) + "<br> Due date: " + e.duedate + "<br> Prority:" + e.priority;
-        tooltipdiv.style.left = x(e.from) + 10 + "px";
+        tooltipdiv.innerHTML = "Job " + e.JobId + "Operation index " + e.OperationIndex +
+          "<br>Setup time:" + e.SetupTimeInInt + "<br> Duration: "
+          + (e.EndTimeInInt - e.StartTimeInInt) + "<br> Due date: " + e.DueDateTime.getDate + "<br> Prority:" + e.Priority;
+        tooltipdiv.style.left = x(e.StartTimeInInt) + 10 + "px";
         tooltipdiv.style.top = y(getMachineIndex(e) - 1) + 225 + "px";
         tooltipdiv.style.display = "block";
       }
@@ -173,8 +210,10 @@ function drawDiagram(diadata) {
     })
     .on("click", function (e) {
       for (let index = 0; index < data.length; index++) {
-        var currentrect = document.getElementById(data[index].opnumber + "rectID" + data[index].job)
-        if (data[index].job != e.job) {
+
+        var currentrect = document.getElementById(data[index].OperationIndex + "rectID" + data[index].JobId);
+
+        if (data[index].JobId != e.JobId) {
           currentrect.style.opacity = 0.4;
         }
         else {
@@ -185,37 +224,48 @@ function drawDiagram(diadata) {
 
   //Append innerrect, green or red, the job is in time or not
   const max = d3.max(data, function (d) {
-    return d.to;
+    return d.EndTimeInInt;
   });
   var innerrects = svg.append("g")
     .attr("fill", "black")
     .selectAll("rect")
     .data(data)
     .join("rect")
-    .attr("x", (d) => x(d.from) + 5)
+    .attr("x", (d) => x(d.StartTimeInInt) + 5)
     .attr("y", (d) => y(getMachineIndex(d) - 1) + 55)
-    .attr("width", d => x(d.to) - x(d.from) - 12)
+    .attr("width", d => x(d.EndTimeInInt) - x(d.StartTimeInInt) - 12)
     .attr("height", y.bandwidth() - 12)
-    .attr("id", (d) => d.opID + "innerrect")
+    .attr("id", (d) => d.OperationId + "innerrect")
     .attr("fill", function (d) {
-      if (d.to <= d.duedate) {
-        return "green";
-      }
-      else {
-        /*tardinesscount += 1;
-        tardinesssum += (d.to - d.duedate);
-        tardinessmax = d3.max(data, d => (d.to - d.duedate));*/
-        return "red"
+      for (let i = 0; i < uniquejobs.length; i++) {
+        var ops = [];
+        var maxPerJob = 0;
+        for (let j = 0; j < data.length; j++) {
+          if (d.JobId == uniquejobs[i]) {
+            ops.push(d.DueDateTimeInInt);
+          }
+        }
+        maxPerJob = d3.max(ops, function (d) {
+          return d.EndTimeInInt;
+        })
+        if (maxPerJob < ops[0]) {
+          return "green";
+        }
+        else {
+          return "red";
+        }
       }
     })
     .attr("opacity", 0.01)
-    .attr("display", d => (((d.to - d.from) / max) < 0.01) ? "none" : "block")
+    .attr("display", d => (((d.EndTimeInInt - d.StartTimeInInt) / max) < 0.01) ? "none" : "block")
     .on("mouseover", function (e) {
       var tooltipdiv = document.getElementById("tooltip");
       if (document.getElementById("myCheck").checked == false) {
         tooltipdiv.style.opacity = 0.9;
-        tooltipdiv.innerHTML = "Setup time:" + e.setup + "<br> Duration: " + (e.to - e.from) + "<br> Due date: " + e.duedate + "<br> Prority:" + e.priority;
-        tooltipdiv.style.left = x(e.from) + 10 + "px";
+        tooltipdiv.innerHTML = "Job " + e.JobId + "Operation index " + e.OperationIndex +
+          "<br>Setup time:" + e.SetupTimeInInt + "<br> Duration: "
+          + (e.EndTimeInInt - e.StartTimeInInt) + "<br> Due date: " + e.DueDateTime.getDate + "<br> Prority:" + e.Priority;
+        tooltipdiv.style.left = x(e.StartTimeInInt) + 10 + "px";
         tooltipdiv.style.top = y(getMachineIndex(e) - 1) + 225 + "px";
         tooltipdiv.style.display = "block";
       }
@@ -234,11 +284,11 @@ function drawDiagram(diadata) {
     .selectAll("rect")
     .data(data)
     .join("rect")
-    .attr("x", (d) => x(d.from) - d.setup)
+    .attr("x", (d) => x(d.StartTimeInInt - d.SetupTimeInInt))
     .attr("y", (d) => y(getMachineIndex(d) - 1) + 50)
-    .attr("width", d => d.setup)
+    .attr("width", d => x(d.StartTimeInInt) - x(d.StartTimeInInt - d.SetupTimeInInt))
     .attr("height", y.bandwidth())
-    .attr("id", (d) => d.opID + "setup")
+    .attr("id", (d) => d.OperationIndex + "setup")
 
 
   //Information text on the operation
@@ -250,16 +300,16 @@ function drawDiagram(diadata) {
     .selectAll("text")
     .data(data)
     .join("text")
-    .attr("x", d => (x(d.to) - 5))
+    .attr("x", d => (x(d.EndTimeInInt) - 5))
     .attr("y", (d) => y(getMachineIndex(d) - 1) + margin.top + y.bandwidth())
     .attr("dy", "0.35em")
     .attr("dx", -4)
-    .attr("id", (d) => d.opID + "innerrecttext")
+    .attr("id", (d) => d.OperationIndex + "innerrecttext")
     .text(function (d) {
-      var v = "Job " + d.job + " Op " + d.opnumber;
+      var v = "Job " + d.JobId + " Op " + d.OperationIndex;
       return v;
     })
-    .attr("display", d => (((d.to - d.from) / max) < 0.1) ? "none" : "block");
+    .attr("display", d => (((d.EndTimeInInt - d.StartTimeInInt) / max) < 0.09) ? "none" : "block");
 
   svg.append("g")
     .call(xAxis);
@@ -281,7 +331,6 @@ function drawDiagram(diadata) {
   else {
     var checkbox = document.createElement('input');
     checkbox.setAttribute("type", "checkbox");
-    //checkbox.id = "checkbox";
     checkbox.value = 1;
     checkbox.id = "myCheck";
 
@@ -292,23 +341,32 @@ function drawDiagram(diadata) {
     document.getElementById('chartDiv').prepend(checkboxtext);
     document.getElementById("checkboxText").append(checkbox);
   }
-  //Draw KPI tables
+
+  drawList(data);
   Criterion();
   CalculationKPI(data, "jobleadtime");
   CalculationKPI(data, "setups");
   CalculationKPI(data, "allocation");
   CalculationKPI(data, "waiting");
+  CalculationKPI(data, "sparetime");
+
   Occupancy();
   DueDate();
-  drawList(data);
+  //drawDuedateBarChart();
+}
 
+//Chart xAxis ticks data - days
+function addDays(date, days) {
+  var result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
 }
 
 function getMachineIndex(d) {
   for (i in machines) {
-    for (j in machines[i].jobsOnMachine) {
-      if (d.opID == machines[i].jobsOnMachine[j]) {
-        return machines[i].id;
+    for (j in machines[i].OperationListById) {
+      if (d.OperationId == machines[i].OperationListById[j]) {
+        return machines[i].Id;
       }
     }
   }
@@ -319,12 +377,12 @@ function checkUniqueJob(jobs) {
   for (let i = 0; i < data.length; i++) {
     var count = 0;
     for (let j = 0; j < jobs.length; j++) {
-      if (data[i].job === jobs[j]) {
+      if (data[i].JobId === jobs[j]) {
         count++;
       }
     }
     if (count === 0) {
-      jobs.push(data[i].job);
+      jobs.push(data[i].JobId);
     }
   }
 }
@@ -376,20 +434,113 @@ function receivedText(e) {
   data = JSON.parse(lines);
   drawDiagram(data);
   openTab(event, 'list', 'main');
-
 }
 
+//Tabpanel (main,kpi)
+function openTab(evt, id, type) {
+  var i, tabcontent, tablinks;
+  if (type == "main") tabcontent = document.getElementsByClassName("maintabcontent");
+  else if (type == "achievement") tabcontent = document.getElementsByClassName("tabcontent");
+
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(id).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+
+//Representation of operation's properties
 function drawList(data) {
   var divv = document.getElementById('list');
   var tbl = document.createElement('table');
   tbl.style = "table";
-  tbl.style.width = '70%';
-  for (let i = 0; i < data.length; i++) {
+  // tbl.style.width = "40%";
+  for (let i = 0; i < data.length + 1; i++) {
     var tr = document.createElement('tr');
-    for (let j = 0; j < 8; j++) {
+    for (let j = 0; j < 11; j++) {
       var tdd = document.createElement("td");
       tdd.appendChild(document.createTextNode('\u0020'))
-      tdd.innerHTML = "asd";
+      if (i == 0) {
+        switch (j) {
+          case 0:
+            tdd.innerHTML = "Operation Id";
+            break;
+          case 1:
+            tdd.innerHTML = "Operation Name";
+            break;
+          case 2:
+            tdd.innerHTML = "Job Id";
+            break;
+          case 3:
+            tdd.innerHTML = "Job Name";
+            break;
+          case 4:
+            tdd.innerHTML = "Operation Index";
+            break;
+          case 5:
+            tdd.innerHTML = "Start Time Of Operation";
+            break;
+          case 6:
+            tdd.innerHTML = "End Time Of Operation";
+            break;
+          case 7:
+            tdd.innerHTML = "Release Date Of Operation";
+            break;
+          case 8:
+            tdd.innerHTML = "Due Date Of Job";
+            break;
+          case 9:
+            tdd.innerHTML = "Setup Time In Minutes";
+            break;
+          case 10:
+            tdd.innerHTML = "Priority";
+            break;
+
+        }
+      }
+      else {
+        switch (j) {
+          case 0:
+            tdd.innerHTML = data[i - 1].OperationId;
+            break;
+          case 1:
+            tdd.innerHTML = data[i - 1].OperationName;
+            break;
+          case 2:
+            tdd.innerHTML = data[i - 1].JodId;
+            break;
+          case 3:
+            tdd.innerHTML = data[i - 1].JobName;
+            break;
+          case 4:
+            tdd.innerHTML = data[i - 1].OperationIndex;
+            break;
+          case 5:
+            tdd.innerHTML = data[i - 1].StartTime;
+            break;
+          case 6:
+            tdd.innerHTML = data[i - 1].EndTime;
+            break;
+          case 7:
+            tdd.innerHTML = data[i - 1].ReleaseDateTime;
+            break;
+          case 8:
+            tdd.innerHTML = data[i - 1].DueDateTime;
+            break;
+          case 9:
+            tdd.innerHTML = data[i - 1].SetupTimeInInt;
+            break;
+          case 10:
+            tdd.innerHTML = data[i - 1].Priority;
+            break;
+
+        }
+      }
+
       tr.appendChild(tdd);
     }
     tbl.appendChild(tr);
@@ -398,29 +549,11 @@ function drawList(data) {
 }
 
 function Criterion() {
-  console.log(data);
   var criterionOptions = ["Cmax", "ΣCi", "Lmax", "Tmax"];
-  /*if (document.getElementById("mySelect") === null) {
-    var selectList = document.createElement("select");
-    selectList.id = "mySelect";
-    document.body.appendChild(selectList);
-    for (var i = 0; i < criteriaList.length; i++) {
-      var option = document.createElement("option");
-      option.value = criteriaList[i];
-      option.text = criteriaList[i];
-      selectList.appendChild(option);
-    }
-    selectList.addEventListener('change', function (e) {
-      selectedOption = selectList.options[selectList.selectedIndex].text;
-      console.log(selectedOption);
-      createCrTable(selectedOption);
-    })
-  }*/
   for (let i = 0; i < criterionOptions.length; i++) {
     createCrTable(criterionOptions[i]);
   }
 }
-
 
 function createCrTable(selectedOption) {
   var div = document.getElementsByName('optimality')[0];
@@ -438,27 +571,33 @@ function createCrTable(selectedOption) {
         var td = document.createElement('td');
         td.appendChild(document.createTextNode('\u0020'))
         max = d3.max(data, function (d) {
-          return d.to;
+          return d.EndTimeInInt;
         });
         if (index == 0) td.innerHTML = "Cmax";
         else if (index == 1) {
           for (let i = 0; i < data.length; i++) {
-            if (data[i].to == max) {
-              td.innerHTML = "End on " + getMachineIndex(data[i]) + "machine";
+            if (data[i].EndTimeInInt == max) {
+              td.innerHTML = "End on " + " machine " + getMachineIndex(data[i]);
             }
           }
         }
-        else td.innerHTML = max;
+        else {
+          for (let i = 0; i < data.length; i++) {
+            if (data[i].EndTimeInInt == max) {
+              td.innerHTML = data[i].EndTime + "( in munites: " + data[i].EndTimeInInt + " )";
+            }
+          }
+        }
         tr.appendChild(td);
       }
       tbl.appendChild(tr);
       break;
 
     case "ΣCi":
-      labell.innerHTML = "Time of execution of operations";
+      labell.innerHTML = "Time of execution of operations (in minutes)";
       var sum = 0;
       for (let index = 0; index < data.length; index++) {
-        sum += (data[index].to - data[index].from);
+        sum += (data[index].EndTimeInInt - data[index].StartTimeInInt);
       }
 
       var tr = document.createElement('tr');
@@ -487,13 +626,14 @@ function createCrTable(selectedOption) {
           else {
             let tempjobs = [];
             data.forEach(element => {
-              if (element.job == uniquejobs[index]) {
+              if (element.JobId == uniquejobs[index]) {
                 tempjobs.push(element);
               }
             });
+
             td.innerHTML = ((d3.max(tempjobs, function (d) {
-              return d.to;
-            })) - d3.max(tempjobs, d => d.duedate));
+              return d.EndTimeInInt;
+            })) - d3.max(tempjobs, d => d.DueDateTimeInInt));
           }
           tr.appendChild(td);
         }
@@ -514,19 +654,19 @@ function createCrTable(selectedOption) {
           else {
             let tempjobs = [];
             data.forEach(element => {
-              if (element.job == uniquejobs[index]) {
+              if (element.JobId == uniquejobs[index]) {
                 tempjobs.push(element);
               }
             });
             if (((d3.max(tempjobs, function (d) {
-              return d.to;
-            })) - d3.max(tempjobs, d => d.duedate)) < 0) {
+              return d.EndTimeInInt;
+            })) - d3.max(tempjobs, d => d.DueDateTimeInInt)) < 0) {
               td.innerHTML = 0;
             }
             else {
               td.innerHTML = (d3.max(tempjobs, function (d) {
-                return d.to;
-              })) - d3.max(tempjobs, d => d.duedate);
+                return d.EndTimeInInt;
+              })) - d3.max(tempjobs, d => d.DueDateTimeInInt);
             }
           }
           tr.appendChild(td);
@@ -556,13 +696,13 @@ function Occupancy() {
       td.appendChild(document.createTextNode('\u0020'))
 
       if (i == 0 && j == 0) td.innerHTML = "Utilization:";
-      if (i == 0 && j == 1) td.innerHTML = Math.round((utilization / (machines.length * d3.max(data, d => (d.to)))) * 100, 1) + "%";
+      if (i == 0 && j == 1) td.innerHTML = Math.round((utilization / utilizationsum) * 100, 1) + "%";
       if (i != 0 && j == 0) {
         c++;
-        td.innerHTML = machines[c].machine;
+        td.innerHTML = machines[c].Name;
       }
       if (i != 0 && j == 1) {
-        td.innerHTML = Math.round((utilizationmachine[i - 1] / max) * 100, 1) + "%";
+        td.innerHTML = Math.round((utilizationmachine[i - 1] / maxtopermachine[i - 1]) * 100, 1) + "%";
       }
       tr.appendChild(td);
     }
@@ -571,19 +711,8 @@ function Occupancy() {
   div.appendChild(tbl);
 }
 
-//Delete elment 
-function removeCrElements() {
-  var elem = document.getElementsByClassName("crtable");
-  for (let index = elem.length - 1; index >= 0; index--) {
-    elem[index].remove();
-  }
-  var selelem = document.getElementById("mySelect");
-  selelem.remove();
-}
-
 //Határidő
 function DueDate() {
-
   //SZÁMÍTÁSOK
   //Késésre, sietésre vonatkozó
   //Count
@@ -592,10 +721,10 @@ function DueDate() {
     var jobdue = 0;
     var datas = [];
     for (let j = 0; j < data.length; j++) {
-      if (data[j].job == uniquejobs[i]) {
+      if (data[j].JobId == uniquejobs[i]) {
         datas.push(data[j]);
-        maxtojob = d3.max(datas, d => (d.to))
-        jobdue = datas[0].duedate;
+        maxtojob = d3.max(datas, d => (d.EndTimeInInt))
+        jobdue = datas[0].DueDateTimeInInt;
       }
     }
     if (jobdue < maxtojob) {
@@ -604,7 +733,6 @@ function DueDate() {
     if (jobdue > maxtojob) {
       earlinesscount += 1;
     }
-
     tardinessjob.push(maxtojob - jobdue); //késés mértéke jobonként, lehet negatív, pozitív is
   }
 
@@ -620,7 +748,6 @@ function DueDate() {
   //Avg
   tardinessavg = Math.round(tardinesssum / tardinesscount);
   earlinessavg = Math.round(earlinesssum / earlinesscount);
-
 
   jobintime.push(tardinesscount); //késő munkák száma
   jobintime.push(uniquejobs.length - tardinesscount); //időben lévők száma
@@ -649,8 +776,8 @@ function DueDate() {
           }
           else {
             data.forEach(element => {
-              if (element.job == uniquejobs[index]) {
-                td.innerHTML = element.duedate;
+              if (element.JobId == uniquejobs[index]) {
+                td.innerHTML = data[i].EndTime + "( in munites: " + data[i].EndTimeInInt + " )";
               }
             });
           }
@@ -675,8 +802,8 @@ function DueDate() {
           if (j == 1 && index == 1) {
             for (let k = 0; k < data.length; k++) {
               var tardinessmaxjob = 0;
-              if ((data[k].to - data[k].duedate) == tardinessmax) {
-                tardinessmaxjob = data[k].job;
+              if ((data[k].EndTimeInInt - data[k].DueDateTimeInInt) == tardinessmax) {
+                tardinessmaxjob = data[k].JobId;
               }
             }
             td.innerHTML = tardinessmax + " (Job " + tardinessmaxjob + ")";
@@ -711,12 +838,11 @@ function DueDate() {
 }
 
 function CalculationKPI(data, sel) {
-
   //SZÁMÍTÁSOK
   //Rendszer terheltsége
   if (isopsuminitialized == false) {
     for (let i = 0; i < data.length; i++) {
-      console.log("Data" + data);
+      ;
       operationsum += 1;
     }
     isopsuminitialized = true;
@@ -724,27 +850,53 @@ function CalculationKPI(data, sel) {
   //Várakozás idők gépenként
   //Üzemkihasználtság gépenként
   //Terheltség gépenként
-  utilization = (machines.length * d3.max(data, d => (d.to)))
+  //utilization = (machines.length * d3.max(data, d => (d.EndTimeInInt)))
   // operationsummachine.push(operationsum);
+
   for (let j = 0; j < machines.length; j++) {
-    wait = d3.max(data, d => (d.to));
-    var operationsumpermachine = 0;
-    for (let i = 0; i < data.length; i++) {
-      for (let k = 0; k < machines[j].jobsOnMachine.length; k++) {
-        if (data[i].opID == machines[j].jobsOnMachine[k]) {
-          wait -= (data[i].to - data[i].from);
-          operationsumpermachine += 1;
+    seged = [];
+    for (let m = 0; m < data.length; m++) {
+      for (let l = 0; l < machines[j].OperationListById.length; l++) {
+        if (data[m].OperationId == machines[j].OperationListById[l]) {
+          seged.push(data[m]);
         }
       }
     }
-    utilization -= wait; //Rendszer kihasználtság
-    if (isarraysinitialized == false && j < machines.length) {
-      utilizationmachine.push(d3.max(data, d => (d.to)) - wait); // Gépenkénti kihasználtság (mennyit ment)
-      operationsummachine.push(operationsumpermachine); //Gépenkénti terhelés(mennyi ment rajta)
-      waitarray.push(wait); //Várakozási idő gépenként
+    wait = d3.max(seged, d => d.EndTimeInInt);
+    maxtopermachine.push(wait);
+
+    if (isutilizationinitialized == false) {
+      utilization += wait;
+      utilizationsum += wait;
+
+      console.log(utilization);
+      var operationsumpermachine = 0;
+      for (let i = 0; i < data.length; i++) {
+        for (let k = 0; k < machines[j].OperationListById.length; k++) {
+          if (data[i].OperationId == machines[j].OperationListById[k]) {
+            wait -= (data[i].EndTimeInInt - data[i].StartTimeInInt);
+            wait -= data[i].SetupTimeInInt;
+            operationsumpermachine += 1;
+          }
+        }
+      }
+      console.log(wait);
+      utilization -= wait; //Rendszer kihasználtság, mennyit ment, a várakozást vonod ki
+      if (isarraysinitialized == false && j < machines.length) {
+        utilizationmachine.push((d3.max(seged, function (d) {
+          return d.EndTimeInInt;
+        })) - wait); // Gépenkénti kihasználtság (mennyit ment)
+        operationsummachine.push(operationsumpermachine); //Gépenkénti terhelés(mennyi ment rajta)
+        waitarray.push(wait); //Várakozási idő gépenként
+
+      }
     }
+    seged = [];
+
   }
+
   isarraysinitialized = true;
+  isutilizationinitialized = true;
 
   //Befoglaló tábla
   var div = document.getElementsByName('kpi')[0];
@@ -762,9 +914,10 @@ function CalculationKPI(data, sel) {
         var jobleadtimes = 0;
         var jobltwithsetups = 0;
         for (let j = 0; j < data.length; j++) {
-          if (data[j].job == uniquejobs[i]) {
-            jobleadtimes += (data[j].to - data[j].from);
-            jobltwithsetups += (data[j].to - data[j].from) + data[j].setup;
+          if (data[j].JobId == uniquejobs[i]) {
+            jobleadtimes += (data[j].EndTimeInInt - data[j].StartTimeInInt);
+
+            jobltwithsetups += (data[j].EndTimeInInt - data[j].StartTimeInInt) + data[j].SetupTimeInInt;
           }
         }
         jobleadtime.push(jobleadtimes);
@@ -793,9 +946,9 @@ function CalculationKPI(data, sel) {
     case "setups":
       //Átállási idők
       for (let index = 0; index < data.length; index++) {
-        setupsum += data[index].setup;
-        maxsetup = d3.max(data, d => (d.setup))
-        if (data[index].setup > 0) {
+        setupsum += data[index].SetupTimeInInt;
+        maxsetup = d3.max(data, d => (d.SetupTimeInInt))
+        if (data[index].SetupTimeInInt > 0) {
           setupcount += 1;
         }
       }
@@ -838,7 +991,7 @@ function CalculationKPI(data, sel) {
 
           if (j == 0 && i == 0) td.innerHTML = "System allocation rate";
           if (j == 1 && i == 0) td.innerHTML = operationsum;
-          if (j == 0 && i != 0) td.innerHTML = machines[i - 1].machine;
+          if (j == 0 && i != 0) td.innerHTML = machines[i - 1].Name;
           if (j == 1 && i != 0) td.innerHTML = operationsummachine[i - 1];
 
           tr.appendChild(td);
@@ -864,7 +1017,7 @@ function CalculationKPI(data, sel) {
           var td = document.createElement('td');
           td.appendChild(document.createTextNode('\u0020'))
 
-          if (j == 0) td.innerHTML = machines[i].machine;
+          if (j == 0) td.innerHTML = machines[i].Name;
           if (j == 1) td.innerHTML = waitarray[i];
 
           tr.appendChild(td);
@@ -874,32 +1027,43 @@ function CalculationKPI(data, sel) {
       div.appendChild(labelwait);
       div.appendChild(buttonwait);
       break;
+
+    case "sparetime":
+      //Tartalékidők operációnként
+      for (let i = 0; i < data.length; i++) {
+        sparetimeoperation.push(data[i].EndTimeInInt - data[i].ReleaseDateTimeInInt);
+      }
+      var labelspare = document.createElement('label');
+      labelspare.innerHTML = "Spare time of operations";
+
+      for (let i = 0; i < data.length; i++) {
+        var tr = document.createElement('tr');
+        for (let j = 0; j < 4; j++) {
+          var td = document.createElement('td');
+          td.appendChild(document.createTextNode('\u0020'))
+
+          if (j == 0) td.innerHTML = "Job " + data[i].JobId + " Operation " + data[i].OperationIndex;
+          if (j == 1) td.innerHTML = data[i].EndTimeInInt;
+          if (j == 2) td.innerHTML = data[i].ReleaseDateTimeInInt;
+          if (j == 3) td.innerHTML = sparetimeoperation[i];
+
+
+          tr.appendChild(td);
+        }
+        tbl.appendChild(tr);
+      }
+      div.appendChild(labelspare);
+      break;
   }
   div.appendChild(tbl);
-}
 
-//KPI tabpanel
-function openTab(evt, id, type) {
-  var i, tabcontent, tablinks;
-  if (type == "main") tabcontent = document.getElementsByClassName("maintabcontent");
-  else if (type == "achievement") tabcontent = document.getElementsByClassName("tabcontent");
-
-  for (i = 0; i < tabcontent.length; i++) {
-    tabcontent[i].style.display = "none";
-  }
-  tablinks = document.getElementsByClassName("tablinks");
-  for (i = 0; i < tablinks.length; i++) {
-    tablinks[i].className = tablinks[i].className.replace(" active", "");
-  }
-  document.getElementById(id).style.display = "block";
-  evt.currentTarget.className += " active";
 }
 
 //Show red-green innerrects in the chart
 function showDueDate() {
   showDueChecked += 1;
   for (let i = 0; i < data.length; i++) {
-    var currentinnerrect = document.getElementById(data[i].opID + "innerrect");
+    var currentinnerrect = document.getElementById(data[i].OperationId + "innerrect");
     if (showDueChecked > 0 && showDueChecked % 2 == 0) {
       currentinnerrect.style.opacity = 0.0;
     }
@@ -914,49 +1078,52 @@ function drawWaitBarDiagram() {
   height = 500;
 
   margin = ({ top: 20, right: 0, bottom: 30, left: 40 })
-  const svg = d3.create("svg")
-    .attr("viewBox", [0, 0, width, height])
-    .attr("width", "45%")
-    .attr("height", "50%")
-  x = d3.scaleBand()
-    .domain(machines.map(d => d.machine))
-    .range([margin.left, width - margin.right])
-    .padding(0.1)
+  if (typeof waitChart === 'undefined') {
+    const svg = d3.create("svg")
+      .attr("viewBox", [0, 0, width, height])
+      .attr("width", "60%")
+      .attr("height", "60%")
+      .attr("id", "waitChart")
+    x = d3.scaleBand()
+      .domain(machines.map(d => d.Name))
+      .range([margin.left, width - margin.right])
+      .padding(0.1)
 
-  y = d3.scaleLinear()
-    .domain([0, d3.max(waitarray, (d) => d)])
-    .range([500 - margin.bottom, margin.top])
+    y = d3.scaleLinear()
+      .domain([0, d3.max(waitarray, (d) => d)])
+      .range([500 - margin.bottom, margin.top])
 
-  const g = svg.append("g")
-    .attr("class", "bars")
-    .attr("fill", "red")
-    .selectAll("rect")
-    .data(waitarray)
-    .join("rect")
-    .attr("x", (d, i) => x(machines[i].machine) + 70)
-    .attr("y", (d, i) => y(d))
-    .attr("height", (d) => y(0) - y(d))
-    .attr("width", x.bandwidth() - 50)
-    .attr("transform",
-      "translate(" + margin.left + "," + ")");
+    const g = svg.append("g")
+      .attr("class", "bars")
+      .attr("fill", "red")
+      .selectAll("rect")
+      .data(waitarray)
+      .join("rect")
+      .attr("x", (d, i) => x(machines[i].Name) + 70)
+      .attr("y", (d, i) => y(d))
+      .attr("height", (d) => y(0) - y(d))
+      .attr("width", x.bandwidth() - 50)
+      .attr("transform",
+        "translate(" + margin.left + "," + ")");
 
-  xAxis = g => g
-    .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(d3.axisBottom(x).tickSizeOuter(0))
+    xAxis = g => g
+      .attr("transform", `translate(0,${height - margin.bottom})`)
+      .call(d3.axisBottom(x).tickSizeOuter(0))
 
-  yAxis = g => g
-    .attr("transform", `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y))
-    .call(g => g.select(".domain").remove())
+    yAxis = g => g
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(d3.axisLeft(y))
+      .call(g => g.select(".domain").remove())
 
-  svg.append("g")
-    .attr("class", "x-axis")
-    .call(xAxis);
+    svg.append("g")
+      .attr("class", "x-axis")
+      .call(xAxis);
 
-  svg.append("g")
-    .attr("class", "y-axis")
-    .call(yAxis);
-  document.getElementsByName("kpiChart").appendChild(svg.node());
+    svg.append("g")
+      .attr("class", "y-axis")
+      .call(yAxis);
+    document.getElementById("kpiChart").appendChild(svg.node());
+  }
 }
 
 //Kördiagramok terheltségre, határidőre
@@ -966,106 +1133,106 @@ function drawPieDiagram(piechartdata, location) {
   margin = 40
   var tooltipslice = document.createElement("div");
   var radius = Math.min(width, height) / 2 - margin
-if (typeof chartPie === 'undefined') {
-  var svg = d3.select("#" + location)
-    .append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .append("g")
-    .attr("position", "relative")
-    .attr("top", 0)
-    .attr("right", 0)
-    .attr("id","chartPie")
-    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+  if (typeof chartPie === 'undefined') {
+    var svg = d3.select("#" + location)
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .append("g")
+      .attr("position", "relative")
+      .attr("top", 0)
+      .attr("right", 0)
+      .attr("id", "chartPie")
+      .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
-  var chartdata = piechartdata;
-  //chartdata.splice(0, 1);
+    var chartdata = piechartdata;
+    //chartdata.splice(0, 1);
 
-  var color = d3.scaleOrdinal()
-    .domain(chartdata)
-    .range(d3.schemeSet2);
+    var color = d3.scaleOrdinal()
+      .domain(chartdata)
+      .range(d3.schemeSet2);
 
-  var pie = d3.pie()
-    .value(function (d) { return d.value; })
-  var data_ready = pie(d3.entries(chartdata))
+    var pie = d3.pie()
+      .value(function (d) { return d.value; })
+    var data_ready = pie(d3.entries(chartdata))
 
-  var arcGenerator = d3.arc()
-    .innerRadius(0)
-    .outerRadius(radius)
+    var arcGenerator = d3.arc()
+      .innerRadius(0)
+      .outerRadius(radius)
 
-  svg
-    .selectAll('mySlices')
-    .data(data_ready)
-    .enter()
-    .append('path')
-    .attr('d', arcGenerator)
-    .attr('fill', function (d) { return (color(d.value + Math.random())) })
-    .attr("stroke", "black")
-    .style("stroke-width", "2px")
-    .style("opacity", 0.7)
-    .on("mouseover", function (e,i) {
-      console.log("valamiii" + location);
+    svg
+      .selectAll('mySlices')
+      .data(data_ready)
+      .enter()
+      .append('path')
+      .attr('d', arcGenerator)
+      .attr('fill', function (d) { return (color(d.value + Math.random())) })
+      .attr("stroke", "black")
+      .style("stroke-width", "2px")
+      .style("opacity", 0.7)
+      .on("mouseover", function (e, i) {
+        console.log("valamiii" + location);
+        if (location == "kpiChart") {
+
+
+          tooltipslice.style.opacity = 0.9;
+          tooltipslice.innerHTML = machines[i].Name + " " + e.value + " op" + (e.value / operationsum) * 100 + "%";
+          tooltipslice.style.left = 110 + 10 + "px";
+          tooltipslice.style.top = 170 + "px";
+          tooltipslice.style.display = "inline";
+
+        }
+        if (location == "due") {
+          tooltipslice.style.opacity = 0.9;
+          tooltipslice.innerHTML = machines[i].Name + " " + e.value + " op" + (e.value / operationsum) * 100 + "%";
+          tooltipslice.style.left = x(e.value) + 10 + "px";
+          tooltipslice.style.top = y(e.value) + 170 + "px";
+          tooltipslice.style.display = "inline";
+          console.log(x(e.value) + 10);
+          console.log(y(e.value) + 170);
+        }
+        document.getElementById(location).append(tooltipslice);
+      }).on("mouseout", function (e) {
+        tooltipslice.style.display = "none";
+      })
+
+    svg
+      .selectAll('mySlices')
+      .data(data_ready)
+      .enter()
+      .append('text')
+      .text(function (d, i) {
+        if (location == "kpiChart") {
+          return machines[i].Name + " " + d.value + " operations"
+        }
+        else return d.value + " jobs"
+      })
+      .attr("transform", function (d) { return "translate(" + arcGenerator.centroid(d) + ")"; })
+      .attr("display", function () {
+        if (chartdata.length > 10) return "none"
+        else return "block"
+      })
+      .style("text-anchor", "middle")
+      .style("font-size", 14)
+
+    var buttonbar = document.createElement('button');
+    buttonbar.innerHTML = "Change to bar chart"
+    buttonbar.id = "buttonBar"
+    buttonbar.onclick = function () {
+      svg.display = "none";
       if (location == "kpiChart") {
+        //document.getElementById("chartPie").style.display="none";
+        //WTF miért nem ?  var elem = document.getElementById("chartPie").remove();
 
-        
-        tooltipslice.style.opacity = 0.9;
-        tooltipslice.innerHTML = machines[i].machine + " " + e.value + " op" + (e.value ) * 100 + "%";
-        tooltipslice.style.left = 110 + 10 + "px";
-        tooltipslice.style.top =  170 + "px";
-        tooltipslice.style.display = "inline";
+        drawAllocationBarDiagram(piechartdata);
+        var elem = document.getElementById("chartPie");
 
-      }
-      if (location == "due") {
-        tooltipslice.style.opacity = 0.9;
-        tooltipslice.innerHTML = machines[i].machine + " " + e.value + " op" + (e.value / chartdata0) * 100 + "%";
-        tooltipslice.style.left = x(e.value) + 10 + "px";
-        tooltipslice.style.top = y(e.value) + 170 + "px";
-        tooltipslice.style.display = "inline";
-        console.log(x(e.value) + 10);
-        console.log(y(e.value) + 170);
-      }
-      document.getElementById(location).append(tooltipslice);
-    }).on("mouseout", function (e) {
-      tooltipslice.style.display = "none";
-    })
-
-  svg
-    .selectAll('mySlices')
-    .data(data_ready)
-    .enter()
-    .append('text')
-    .text(function (d, i) {
-      if (location == "kpiChart") {
-        return machines[i].machine + " " + d.value + " operations"
-      }
-      else return d.value + " jobs"
-    })
-    .attr("transform", function (d) { return "translate(" + arcGenerator.centroid(d) + ")"; })
-    .attr("display", function () {
-      if (chartdata.length > 10) return "none"
-      else return "block"
-    })
-    .style("text-anchor", "middle")
-    .style("font-size", 14)
-
-  var buttonbar = document.createElement('button');
-  buttonbar.innerHTML = "Change to bar chart"
-  buttonbar.id="buttonBar"
-  buttonbar.onclick = function () {
-    svg.display = "none";
-    if (location == "kpiChart") {
-      //document.getElementById("chartPie").style.display="none";
-     //WTF miért nem ?  var elem = document.getElementById("chartPie").remove();
-  
-      drawAllocationBarDiagram(piechartdata);
-      var elem = document.getElementById("chartPie");
-    
         elem.remove();
-      
-      var selelem = document.getElementById("buttonBar");
-      selelem.remove();
-    }
-    
+
+        var selelem = document.getElementById("buttonBar");
+        selelem.remove();
+      }
+
     };
     // else drawDueBarDiagram();
   }
@@ -1082,111 +1249,129 @@ function drawAllocationBarDiagram(operationsummachine) {
   var chartdata = operationsummachine;
 
   if (typeof chartAllocation === 'undefined') {
-  margin = ({ top: 20, right: 20, bottom: 30, left:70 })
-  const svg = d3.create("svg")
-    .attr("viewBox", [0, 0, width, height])
-    .attr("width", 420)
-    .attr("height", 420)
-    .attr("id","chartAllocation")
-    .attr("position", "relative")
-    .attr("top", 0)
-    .attr("right", 0)
+    margin = ({ top: 20, right: 20, bottom: 30, left: 70 })
+    const svg = d3.create("svg")
+      .attr("viewBox", [0, 0, width, height])
+      .attr("width", 420)
+      .attr("height", 420)
+      .attr("id", "chartAllocation")
+      .attr("position", "relative")
+      .attr("top", 0)
+      .attr("right", 0)
 
 
-  x = d3.scaleBand()
-    .domain(machines.map(d => d.machine))
-    .range([margin.left, width - margin.right])
-    .padding(0.1)
+    x = d3.scaleBand()
+      .domain(machines.map(d => d.Name))
+      .range([margin.left, width - margin.right])
+      .padding(0.1)
 
-  y = d3.scaleLinear()
-    .domain([0, d3.max(chartdata, (d) => d)])
-    .range([height - margin.bottom, margin.top])
+    y = d3.scaleLinear()
+      .domain([0, d3.max(chartdata, (d) => d)])
+      .range([height - margin.bottom, margin.top])
 
-  const g = svg.append("g")
-    .attr("class", "bars")
-    .attr("fill", "red")
+    const g = svg.append("g")
+      .attr("class", "bars")
+      .attr("fill", "red")
+      .selectAll("rect")
+      .data(chartdata)
+      .join("rect")
+      .attr("x", (d, i) => x(machines[i].Name))
+      .attr("y", (d, i) => y(d))
+      .attr("height", (d) => y(0) - y(d))
+      .attr("width", x.bandwidth() - 50)
+      .attr("transform",
+        "translate(" + margin.left + "," + ")");
+
+    xAxis = g => g
+      .attr("transform", `translate(0,${height - margin.bottom})`)
+      .call(d3.axisBottom(x).tickSizeOuter(0))
+
+    yAxis = g => g
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(d3.axisLeft(y))
+      .call(g => g.select(".domain").remove())
+
+    svg.append("g")
+      .attr("class", "x-axis")
+      .call(xAxis);
+
+    svg.append("g")
+      .attr("class", "y-axis")
+      .call(yAxis);
+    document.getElementById("kpiChart").appendChild(svg.node());
+  }
+}
+
+function drawDuedateBarChart() {
+
+  console.log(tardinessjob);
+  var margin = { left: 20, right: 30, top: 30, bottom: 0 };
+  var barWidth = 30;  // Width of the bars
+  var chartHeight = 350;  // Height of chart, from x-axis (ie. y=0)
+  var chartWidth = 400;
+
+  var yScale = d3.scaleLinear()
+    .domain([0, d3.max(tardinessjob)+1])
+    .range([0, chartHeight]);
+
+
+  var yAxisScale = d3.scaleLinear()
+    .domain([d3.min(tardinessjob), d3.max(tardinessjob)+1])
+    .range([chartHeight - yScale(d3.min(tardinessjob)), 0])
+
+
+
+  var svg = d3.create('svg');
+  svg
+    .attr('height', chartHeight + 150)
+    .attr('width', chartWidth + 100)
+    .attr("padding","30px")
+    .style('border', '1px solid');
+
+  svg
     .selectAll("rect")
-    .data(chartdata)
-    .join("rect")
-    .attr("x", (d, i) => x(machines[i].machine))
-    .attr("y", (d, i) => y(d))
-    .attr("height", (d) => y(0) - y(d))
-    .attr("width", x.bandwidth() - 50)
-    .attr("transform",
-      "translate(" + margin.left + "," + ")");
+    .data(tardinessjob)
+    .enter()
+    .append("rect")
+    .attr("x", function (d, i) { return margin.left + (i * 1.5) * barWidth + 20; })
+    .attr("y", function (d, i) { return chartHeight - Math.max(0, yScale(d)); })
+    .attr("height", function (d) { return Math.abs(yScale(d)); })
+    .attr("width", barWidth)
+    .attr("padding-right", "20")
+    .style("fill", function (d) {
+      if (d > 0) {
+        return "red";
+      }
+      if (d < 0) return "green";
+    })
+    .style("stroke", "black")
 
-  xAxis = g => g
-    .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(d3.axisBottom(x).tickSizeOuter(0))
+    .style("opacity", function (d, i) { return 1 });
 
-  yAxis = g => g
-    .attr("transform", `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y))
-    .call(g => g.select(".domain").remove())
+  var yAxis = d3.axisLeft(yAxisScale);
+
 
   svg.append("g")
-    .attr("class", "x-axis")
-    .call(xAxis);
+    .attr("fill", "black")
+    .attr("text-anchor", "end")
+    .attr("font-family", "sans-serif")
+    .attr("font-size", 12)
+    .selectAll("text")
+    .data(tardinessjob)
+    .join("text")
+    .attr("x", function (d, i) { return 34 + margin.left + (i * 1.5) * barWidth + 20; })
+    .attr("y", function (d, i) { return -5+chartHeight - Math.max(0, yScale(d)); })
+    .attr("dy", "0.35em")
+    .attr("dx", -4)
+    .text((d,i) => "Job "+i+1)
 
-  svg.append("g")
-    .attr("class", "y-axis")
+  svg.append('g')
+    .attr('transform', function (d) {
+      return 'translate(' + margin.left + ', 0)';
+    })
     .call(yAxis);
+
+
   document.getElementById("kpiChart").appendChild(svg.node());
-}
-}
-//Oszlopdiagram határidőre
-function drawDueBarDiagram(operationsummachine) {
-  width = 700;
-  height = 500;
 
-  //Data
-  var chartdata = operationsummachine;
-
-
-  margin = ({ top: 20, right: 0, bottom: 30, left: 40 })
-  const svg = d3.create("svg")
-    .attr("viewBox", [0, 0, width, height])
-    .attr("width", "60%")
-    .attr("height", "60%")
-  //.attr("display","inline-block")
-
-  x = d3.scaleBand()
-    .domain(machines.map(d => d.machine))
-    .range([margin.left, width - margin.right])
-    .padding(0.1)
-
-  y = d3.scaleLinear()
-    .domain([0, d3.max(chartdata, (d) => d)])
-    .range([height - margin.bottom, margin.top])
-
-  const g = svg.append("g")
-    .attr("class", "bars")
-    .attr("fill", "red")
-    .selectAll("rect")
-    .data(chartdata)
-    .join("rect")
-    .attr("x", (d, i) => x(machines[i].machine))
-    .attr("y", (d, i) => y(d))
-    .attr("height", (d) => y(0) - y(d))
-    .attr("width", x.bandwidth() - 50)
-    .attr("transform",
-      "translate(" + margin.left + "," + ")");
-
-  xAxis = g => g
-    .attr("transform", `translate(0,${height - margin.bottom})`)
-    .call(d3.axisBottom(x).tickSizeOuter(0))
-
-  yAxis = g => g
-    .attr("transform", `translate(${margin.left},0)`)
-    .call(d3.axisLeft(y))
-    .call(g => g.select(".domain").remove())
-
-  svg.append("g")
-    .attr("class", "x-axis")
-    .call(xAxis);
-
-  svg.append("g")
-    .attr("class", "y-axis")
-    .call(yAxis);
-  document.getElementById("kpi").appendChild(svg.node());
 }

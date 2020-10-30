@@ -1,5 +1,4 @@
 {
-
   "operations": [
     {
       "opID": 1,
@@ -7,7 +6,7 @@
       "opnumber": 1,
       "from": 1,
       "to": 10,
-      "duedate": 12,
+      "duedate": 25,
       "setup": 0,
       "priority": 0
     },
@@ -16,8 +15,8 @@
       "job": 1,
       "opnumber": 2,
       "from": 10,
-      "to": 140,
-      "duedate": 16,
+      "to": 12,
+      "duedate": 25,
       "setup": 0,
       "priority": 0
     },
@@ -37,7 +36,7 @@
       "opnumber": 1,
       "from": 12,
       "to": 20,
-      "duedate": 25,
+      "duedate": 32,
       "setup": 3,
       "priority": 1
     },
@@ -47,7 +46,7 @@
       "opnumber": 2,
       "from": 20,
       "to": 27,
-      "duedate": 29,
+      "duedate": 32,
       "setup": 0,
       "priority": 1
     },
@@ -67,7 +66,7 @@
       "opnumber": 1,
       "from": 21,
       "to": 26,
-      "duedate": 29,
+      "duedate": 39,
       "setup": 8,
       "priority": 1
     },
@@ -77,7 +76,7 @@
       "opnumber": 2,
       "from": 28,
       "to": 35,
-      "duedate": 35,
+      "duedate": 39,
       "setup": 6,
       "priority": 1
     },
@@ -86,8 +85,8 @@
       "job": 3,
       "opnumber": 3,
       "from": 36,
-      "to": 1100,
-      "duedate": 39,
+      "to": 50,
+      "duedate": 50,
       "setup": 4,
       "priority": 1
     }
@@ -96,7 +95,6 @@
     {
       "id": 1,
       "machine": "M1",
-      "position": 1,
       "jobsOnMachine": [ 1,4,7 ]
     },
     {
@@ -107,7 +105,8 @@
     {
       "id": 3,
       "machine": "M3",
-      "jobsOnMachine": [ 3,6,9 ]
+      "jobsOnMachine": [ 3, 6, 9 ]
+    
     }
 
   ]

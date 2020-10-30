@@ -16,71 +16,92 @@
     <div class="w3-top">
         <div class="w3-bar w3-white w3-wide w3-padding w3-card">
             <a href="Home.html" class="w3-bar-item w3-button"><b>Interactive Gantt diagram</b></a>
-            <!-- Float links to the right. Hide them on small screens -->
             <div class="w3-right w3-hide-small">
                 <a href="Home.html" class="w3-bar-item w3-button">Short description</a>
                 <a href="Home.html" class="w3-bar-item w3-button">Gantt-chart</a>
                 <a href="Jobs.html" class="w3-bar-item w3-button">Jobs</a>
-                <!--  <li> <button onclick="location.href = 'Jobs.html';">Jobs</button></li>
-           -->
+
             </div>
         </div>
     </div>
 
     <div class="jobcontainer">
+        <!-- Load .json file -->
         <form id="jsonFile" name="jsonFile" enctype="multipart/form-data" method="post" class="fileinput">
 
             <h2>Json File</h2>
             <input class="w3-bar-item w3-button" id="fileinput" value="asd" placeholder="asdfgh" class="inputbutton"
                 type="file"></input>
             <label id="inputfile_name" class="w3-bar-item w3-button" class="inputbutton" for="fileinput">Choose
-                File!</label>
+                File</label>
             <input type="button" class="w3-bar-item w3-button" id="btnLoad" value="Load" onclick="loadFile();" />
             <label id="lblLoad" class="w3-bar-item w3-button" class="inputbutton" for="btnLoad">Load</label>
-
         </form>
 
+        <!-- Main tab -->
         <div class="tab">
-            <button onclick="mainopenTab(event, 'list')" class="w3-bar-item w3-button tablinks">List</button>
-            <button onclick="mainopenTab(event, 'chartDiv')" class="w3-bar-item w3-button tablinks">Chart</button>
+            <button onclick="openTab(event, 'list','main')" class="w3-bar-item w3-button tablinks">List</button>
+            <button onclick="openTab(event, 'chartDiv','main')" class="w3-bar-item w3-button tablinks">Chart</button>
         </div>
-        <div id="chartDiv"class="maintabcontent">
 
+        <!-- Main tab content -->
+        <div id="chartDiv" class="maintabcontent">
             <svg name="chart" id="chart" class="chart"></svg>
             <div id="tooltip" style="position: absolute; opacity: 0;" class="tooltip"></div>
             <script src="https://d3js.org/d3.v5.min.js"></script>
-            <script src="drawChart.js"></script>
+            <script src="mainChart.js"></script>
         </div>
-        <div id="list" class="maintabcontent"><h3>asdfghjhjklkSDFGHJK</h3></div>
+        <div id="list" class="maintabcontent">
+            <h3>Properties of operations</h3>
+        </div>
 
+        <!-- KPI tab  -->
         <div class="tab">
-            <button onclick="openTab(event, 'optimality')" class="w3-bar-item w3-button tablinks">Optimality
+            <button onclick="openTab(event, 'optimality','achievement')"
+                class="w3-bar-item w3-button tablinks">Optimality
                 criterion</button>
-            <button onclick="openTab(event, 'occupancy')" class="w3-bar-item w3-button tablinks">Occupancy rate</button>
-            <button onclick="openTab(event, 'kpi')" class="w3-bar-item w3-button tablinks">KPI</button>
-            <button onclick="openTab(event, 'due')" class="w3-bar-item w3-button tablinks">Due Dates</button>
+            <button onclick="openTab(event, 'occupancy','achievement')" class="w3-bar-item w3-button tablinks">Occupancy
+                rate</button>
+            <button onclick="openTab(event, 'kpi','achievement')" class="w3-bar-item w3-button tablinks">KPI</button>
+            <button onclick="openTab(event, 'due','achievement')" class="w3-bar-item w3-button tablinks">Due
+                Dates</button>
+        </div>
+        <ul class="horizontal">
+            <li>
+                <div id="indicatorDiv">
+                    <div name="optimality" id="optimality" class="tabcontent">
+                        <h3>Optimality crietion</h3>
+                    </div>
+                    <div name="occupancy" id="occupancy" class="tabcontent">
+                        <h3>Occupancy rate</h3>
+                    </div>
+                    <div name="kpi" id="kpi" class="tabcontent">
+                        <h3>KPI</h3>
+                    </div>
+                    <div name="due" id="due" class="tabcontent">
+                        <h3>Due Date</h3>
+                        <label>Due dates of jobs</label>
+                        <button id="innerrect" onclick="showDueDate()" class="w3-bar-item w3-button tablinks">Show in
+                            the
+                            Chart</button>
+                    </div>
+                </div>
+            </li>
+            <li id="kpili">
+                <div id="indicatorChartDiv">
+                    <div name="kpiChart" id="kpiChart" class="kpiChart"></div>
+                    <div name="dueChart" id="dueChart" class="kpiChart"></div>
+                </div>
+            </li>
 
-        </div>
-        <div class="disp">            
-        <div name="optimality" id="optimality" class="tabcontent">
-            <h3>Optimality crietion</h3>
-        </div>
+        </ul>
 
-        <div name="occupancy" id="occupancy" class="tabcontent">
-            <h3>Occupancy rate</h3>
-        </div>
 
-        <div name="kpi" id="kpi" class="tabcontent">
-            <h3>KPI</h3>
-        </div>
+        <!-- KPI tab content -->
 
-        <div name="due" id="due" class="tabcontent">
-            <h3>Due Date</h3>
-            <label>Due dates of jobs</label>
-            <button id="innerrect" onclick="showDueDate()" class="w3-bar-item w3-button tablinks">Show in the
-                Chart</button>
-        </div>
-    </div>  
+
+
+
     </div>
     <!-- <body class="container">
     <div  >

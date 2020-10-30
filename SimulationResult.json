@@ -1,0 +1,371 @@
+{
+  "SimulationName": "MyLittleSimulation",
+  "StartDateTime": "2020-10-21T08:25:00",
+  "EndDateTime": "2020-10-22T02:20:00",
+  "Operations": [
+    {
+      "OperationId": 1,
+      "OperationName": "Spread Material",
+      "JobId": 1,
+      "JobName": "Bronze Plate Order From XY Company",
+      "OperationIndex": 0,
+      "StartTime": "2020-10-21T08:30:00",
+      "StartTimeInInt": 0,
+      "EndTime": "2020-10-21T11:00:00",
+      "EndTimeInInt": 25,
+      "ReleaseDateTime": "2020-10-21T08:00:00",
+      "ReleaseDateTimeInInt": 0,
+      "DueDateTime": "2020-10-21T17:00:00",
+      "DueDateTimeInInt": 110,
+      "SetupTimeInInt": 0,
+      "Priority": 7
+    },
+    {
+      "OperationId": 2,
+      "OperationName": "Cut Excess Material",
+      "JobId": 1,
+      "JobName": "Bronze Plate Order From XY Company",
+      "OperationIndex": 1,
+      "StartTime": "2020-10-21T11:00:00",
+      "StartTimeInInt": 25,
+      "EndTime": "2020-10-21T14:45:00",
+      "EndTimeInInt": 55,
+      "ReleaseDateTime": "2020-10-21T08:00:00",
+      "ReleaseDateTimeInInt": 20,
+      "DueDateTime": "2020-10-21T17:00:00",
+      "DueDateTimeInInt": 110,
+      "SetupTimeInInt": 0,
+      "Priority": 7
+    },
+    {
+      "OperationId": 3,
+      "OperationName": "Flip Material",
+      "JobId": 1,
+      "JobName": "Bronze Plate Order From XY Company",
+      "OperationIndex": 2,
+      "StartTime": "2020-10-21T14:45:00",
+      "StartTimeInInt": 55,
+      "EndTime": "2020-10-21T15:00:00",
+      "EndTimeInInt": 103,
+      "ReleaseDateTime": "2020-10-21T08:00:00",
+      "ReleaseDateTimeInInt": 50,
+      "DueDateTime": "2020-10-21T17:00:00",
+      "DueDateTimeInInt": 110,
+      "SetupTimeInInt": 0,
+      "Priority": 7
+    },
+    {
+      "OperationId": 4,
+      "OperationName": "Spread Material",
+      "JobId": 2,
+      "JobName": "Silver Plate Order From XY Company",
+      "OperationIndex": 0,
+      "StartTime": "2020-10-21T15:00:00",
+      "StartTimeInInt": 25,
+      "EndTime": "2020-10-21T17:30:00",
+      "EndTimeInInt": 50,
+      "ReleaseDateTime": "2020-10-21T08:00:00",
+      "ReleaseDateTimeInInt": 20,
+      "DueDateTime": "2020-10-21T17:00:00",
+      "DueDateTimeInInt": 125,
+      "SetupTimeInInt": 0,
+      "Priority": 7
+    },
+    {
+      "OperationId": 5,
+      "OperationName": "Cut Excess Material",
+      "JobId": 2,
+      "JobName": "Bronze Plate Order From XY Company",
+      "OperationIndex": 1,
+      "StartTime": "2020-10-21T17:30:00",
+      "StartTimeInInt": 58,
+      "EndTime": "2020-10-21T21:15:00",
+      "EndTimeInInt": 104,
+      "ReleaseDateTime": "2020-10-21T08:00:00",
+      "ReleaseDateTimeInInt": 20,
+      "DueDateTime": "2020-10-21T17:00:00",
+      "DueDateTimeInInt": 125,
+      "SetupTimeInInt": 3,
+      "Priority": 7
+    },
+    {
+      "OperationId": 6,
+      "OperationName": "Spread Material",
+      "JobId": 2,
+      "JobName": "Bronze Sword Order From Z Company",
+      "OperationIndex": 2,
+      "StartTime": "2020-10-21T21:15:00",
+      "StartTimeInInt": 104,
+      "EndTime": "2020-10-21T22:05:00",
+      "EndTimeInInt": 121,
+      "ReleaseDateTime": "2020-10-21T12:00:00",
+      "ReleaseDateTimeInInt": 115,
+      "DueDateTime": "2020-10-28T12:00:00",
+      "DueDateTimeInInt": 125,
+      "SetupTimeInInt": 0,
+      "Priority": 3
+    },
+    {
+      "OperationId": 7,
+      "OperationName": "Cut Excess Material",
+      "JobId": 3,
+      "JobName": "Bronze Sword Order From Z Company",
+      "OperationIndex": 0,
+      "StartTime": "2020-10-21T22:05:00",
+      "StartTimeInInt": 57,
+      "EndTime": "2020-10-21T23:20:00",
+      "EndTimeInInt": 70,
+      "ReleaseDateTime": "2020-10-21T12:00:00",
+      "ReleaseDateTimeInInt": 50,
+      "DueDateTime": "2020-10-28T12:00:00",
+      "DueDateTimeInInt": 154,
+      "SetupTimeInInt": 7,
+      "Priority": 3
+    },
+    {
+      "OperationId": 8,
+      "OperationName": "Flip Material",
+      "JobId": 3,
+      "JobName": "Bronze Sword Order From Z Company",
+      "OperationIndex": 1,
+      "StartTime": "2020-10-21T23:45:00",
+      "StartTimeInInt": 108,
+      "EndTime": "2020-10-21T23:50:00",
+      "EndTimeInInt": 132,
+      "ReleaseDateTime": "2020-10-21T12:00:00",
+      "ReleaseDateTimeInInt": 100,
+      "DueDateTime": "2020-10-28T12:00:00",
+      "DueDateTimeInInt": 154,
+      "SetupTimeInInt": 4,
+      "Priority": 3
+    },
+    {
+      "OperationId": 9,
+      "OperationName": "Spread Material",
+      "JobId": 3,
+      "JobName": "Bronze Sword Order From Z Company",
+      "OperationIndex": 2,
+      "StartTime": "2020-10-21T23:50:00",
+      "StartTimeInInt": 132,
+      "EndTime": "2020-10-22T00:40:00",
+      "EndTimeInInt": 156,
+      "ReleaseDateTime": "2020-10-21T12:00:00",
+      "ReleaseDateTimeInInt": 100,
+      "DueDateTime": "2020-10-28T12:00:00",
+      "DueDateTimeInInt": 154,
+      "SetupTimeInInt": 0,
+      "Priority": 3
+    },
+    {
+      "OperationId": 10,
+      "OperationName": "Cut Excess Material",
+      "JobId": 4,
+      "JobName": "Bronze Sword Order From Z Company",
+      "OperationIndex": 0,
+      "StartTime": "2020-10-22T00:40:00",
+      "StartTimeInInt": 70,
+      "EndTime": "2020-10-22T01:55:00",
+      "EndTimeInInt": 119,
+      "ReleaseDateTime": "2020-10-21T12:00:00",
+      "ReleaseDateTimeInInt": 215,
+      "DueDateTime": "2020-10-28T12:00:00",
+      "DueDateTimeInInt": 190,
+      "SetupTimeInInt": 0,
+      "Priority": 3
+    },
+    {
+      "OperationId": 11,
+      "OperationName": "Grind",
+      "JobId": 4,
+      "JobName": "Bronze Sword Order From Z Company",
+      "OperationIndex": 1,
+      "StartTime": "2020-10-21T23:20:00",
+      "StartTimeInInt": 132,
+      "EndTime": "2020-10-21T23:45:00",
+      "EndTimeInInt": 170,
+      "ReleaseDateTime": "2020-10-21T12:00:00",
+      "ReleaseDateTimeInInt": 120,
+      "DueDateTime": "2020-10-28T12:00:00",
+      "DueDateTimeInInt": 190,
+      "SetupTimeInInt": 0,
+      "Priority": 3
+    },
+    {
+      "OperationId": 12,
+      "OperationName": "Grind",
+      "JobId": 4,
+      "JobName": "Bronze Sword Order From Z Company",
+      "OperationIndex": 2,
+      "StartTime": "2020-10-22T01:55:00",
+      "StartTimeInInt": 170,
+      "EndTime": "2020-10-22T02:20:00",
+      "EndTimeInInt": 200,
+      "ReleaseDateTime": "2020-10-21T12:00:00",
+      "ReleaseDateTimeInInt": 150,
+      "DueDateTime": "2020-10-28T12:00:00",
+      "DueDateTimeInInt": 190,
+      "SetupTimeInInt": 0,
+      "Priority": 3
+    },
+    {
+      "OperationId": 13,
+      "OperationName": "Cut Excess Material",
+      "JobId": 5,
+      "JobName": "Bronze Sword Order From Z Company",
+      "OperationIndex": 0,
+      "StartTime": "2020-10-22T00:40:00",
+      "StartTimeInInt": 125,
+      "EndTime": "2020-10-22T01:55:00",
+      "EndTimeInInt": 160,
+      "ReleaseDateTime": "2020-10-21T12:00:00",
+      "ReleaseDateTimeInInt": 100,
+      "DueDateTime": "2020-10-28T12:00:00",
+      "DueDateTimeInInt": 250,
+      "SetupTimeInInt": 6,
+      "Priority": 3
+    },
+    {
+      "OperationId": 14,
+      "OperationName": "Grind",
+      "JobId": 5,
+      "JobName": "Bronze Sword Order From Z Company",
+      "OperationIndex": 1,
+      "StartTime": "2020-10-21T23:20:00",
+      "StartTimeInInt": 170,
+      "EndTime": "2020-10-21T23:45:00",
+      "EndTimeInInt": 240,
+      "ReleaseDateTime": "2020-10-21T12:00:00",
+      "ReleaseDateTimeInInt": 120,
+      "DueDateTime": "2020-10-28T12:00:00",
+      "DueDateTimeInInt": 250,
+      "SetupTimeInInt": 0,
+      "Priority": 3
+    },
+    {
+      "OperationId": 15,
+      "OperationName": "Grind",
+      "JobId": 5,
+      "JobName": "Bronze Sword Order From Z Company",
+      "OperationIndex": 2,
+      "StartTime": "2020-10-22T01:55:00",
+      "StartTimeInInt": 240,
+      "EndTime": "2020-10-22T02:20:00",
+      "EndTimeInInt": 270,
+      "ReleaseDateTime": "2020-10-21T12:00:00",
+      "ReleaseDateTimeInInt": 200,
+      "DueDateTime": "2020-10-28T12:00:00",
+      "DueDateTimeInInt": 250,
+      "SetupTimeInInt": 0,
+      "Priority": 3
+    }
+  ],
+  "Resources": [
+    {
+      "Id": 1,
+      "Name": "Iron Anvil",
+      "OperationListById": [
+        1,
+        4,
+        7,
+        10,
+        13
+      ],
+      "Availability": [
+        {
+          "StartTimeInInt": -25,
+          "EndTimeInInt": 574
+        }
+      ]
+    },
+    {
+      "Id": 2,
+      "Name": "Grinder",
+      "OperationListById": [
+        2,
+        5,
+        8,
+        11,
+        14
+      ],
+      "Availability": [
+        {
+          "StartTimeInInt": -25,
+          "EndTimeInInt": 34
+        },
+        {
+          "StartTimeInInt": 95,
+          "EndTimeInInt": 154
+        },
+        {
+          "StartTimeInInt": 335,
+          "EndTimeInInt": 394
+        },
+        {
+          "StartTimeInInt": 515,
+          "EndTimeInInt": 574
+        }
+      ]
+    },
+    {
+      "Id": 3,
+      "Name": "Cutting",
+      "OperationListById": [
+        3,
+        6,
+        9,
+        12,
+        15
+      ],
+      "Availability": [
+        {
+          "StartTimeInInt": -25,
+          "EndTimeInInt": 574
+        }
+      ]
+    }
+  ],
+  "JobQueuePriorities": [
+    {
+      "Name": "Due Date",
+      "Type": "Min",
+      "Value": 8
+    },
+    {
+      "Name": "Setup Time",
+      "Type": "Min",
+      "Value": 4
+    },
+    {
+      "Name": "Priority",
+      "Type": "Max",
+      "Value": 9
+    },
+    {
+      "Name": "Operation Flexibility",
+      "Type": "Max",
+      "Value": 4
+    }
+  ],
+  "TechnologyListPriorities": [
+    {
+      "Name": "Amount Of Operations",
+      "Type": "Min",
+      "Value": 7
+    },
+    {
+      "Name": "Max Average FlexibleOperation",
+      "Type": "Max",
+      "Value": 3
+    },
+    {
+      "Name": "Max Least FlexibleOperation",
+      "Type": "Max",
+      "Value": 9
+    },
+    {
+      "Name": "Max Most FlexibleOperation",
+      "Type": "Max",
+      "Value": 4
+    }
+  ]
+}
