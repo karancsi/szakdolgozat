@@ -60,6 +60,9 @@ var isutilizationinitialized = false;
 //xAxis tick numbers
 var tickdata = [];
 
+//Dátumok
+var getdates = [];
+
 //Gantt diagram kirajzolása
 function drawDiagram(diadata) {
   data = diadata.Operations;
@@ -237,24 +240,28 @@ function drawDiagram(diadata) {
     .attr("height", y.bandwidth() - 12)
     .attr("id", (d) => d.OperationId + "innerrect")
     .attr("fill", function (d) {
-      for (let i = 0; i < uniquejobs.length; i++) {
+    //  for (let i = 0; i < uniquejobs.length; i++) {
         var ops = [];
-        var maxPerJob = 0;
+        var maxPerJob =0;
         for (let j = 0; j < data.length; j++) {
-          if (d.JobId == uniquejobs[i]) {
-            ops.push(d.DueDateTimeInInt);
+          if (data[j].JobId == d.JobId) {
+            ops.push(data[j]);
           }
         }
         maxPerJob = d3.max(ops, function (d) {
+      
+
           return d.EndTimeInInt;
         })
-        if (maxPerJob < ops[0]) {
+        console.log("Endtime");
+        console.log(maxPerJob);
+        if (maxPerJob < ops[0].DueDateTimeInInt) {
           return "green";
         }
         else {
           return "red";
         }
-      }
+      
     })
     .attr("opacity", 0.01)
     .attr("display", d => (((d.EndTimeInInt - d.StartTimeInInt) / max) < 0.01) ? "none" : "block")
@@ -264,7 +271,7 @@ function drawDiagram(diadata) {
         tooltipdiv.style.opacity = 0.9;
         tooltipdiv.innerHTML = "Job " + e.JobId + "Operation index " + e.OperationIndex +
           "<br>Setup time:" + e.SetupTimeInInt + "<br> Duration: "
-          + (e.EndTimeInInt - e.StartTimeInInt) + "<br> Due date: " + e.DueDateTime.getDate + "<br> Prority:" + e.Priority;
+          + (e.EndTimeInInt - e.StartTimeInInt) + "<br> Due date: " + e.DueDateTime.getFullYear()+ "." + e.DueDateTime.getMonth() +"."+e.DueDateTime.getDate()+"."+ "<br> Prority:" + e.Priority;
         tooltipdiv.style.left = x(e.StartTimeInInt) + 10 + "px";
         tooltipdiv.style.top = y(getMachineIndex(e) - 1) + 225 + "px";
         tooltipdiv.style.display = "block";
@@ -440,7 +447,27 @@ function receivedText(e) {
 function openTab(evt, id, type) {
   var i, tabcontent, tablinks;
   if (type == "main") tabcontent = document.getElementsByClassName("maintabcontent");
-  else if (type == "achievement") tabcontent = document.getElementsByClassName("tabcontent");
+  else if (type == "achievement") {
+    tabcontent = document.getElementsByClassName("tabcontent");
+
+    switch (id) {
+      case "kpi":
+        document.getElementById("kpiChart").style.display = "block";
+        document.getElementById("dueChart").style.display = "none";
+
+        break;
+      case "due":
+        document.getElementById("dueChart").style.display = "block";
+        document.getElementById("kpiChart").style.display = "none";
+        break;
+
+      default:
+        break;
+    }
+  }
+  else if (type == "list") {
+    tabcontent = document.getElementsByClassName("listtabcontent");
+  }
 
   for (i = 0; i < tabcontent.length; i++) {
     tabcontent[i].style.display = "none";
@@ -455,7 +482,7 @@ function openTab(evt, id, type) {
 
 //Representation of operation's properties
 function drawList(data) {
-  var divv = document.getElementById('list');
+  var divv = document.getElementById('operationsdata');
   var tbl = document.createElement('table');
   tbl.style = "table";
   // tbl.style.width = "40%";
@@ -511,7 +538,7 @@ function drawList(data) {
             tdd.innerHTML = data[i - 1].OperationName;
             break;
           case 2:
-            tdd.innerHTML = data[i - 1].JodId;
+            tdd.innerHTML = data[i - 1].JobId;
             break;
           case 3:
             tdd.innerHTML = data[i - 1].JobName;
@@ -520,16 +547,20 @@ function drawList(data) {
             tdd.innerHTML = data[i - 1].OperationIndex;
             break;
           case 5:
-            tdd.innerHTML = data[i - 1].StartTime;
+            var t = new Date(data[i - 1].StartTime)
+            tdd.innerHTML = t.getFullYear() + "." + t.getMonth() + "." + t.getDate() + ". " + t.getHours() + ":" + t.getMinutes() + ":" + t.getSeconds();
             break;
           case 6:
-            tdd.innerHTML = data[i - 1].EndTime;
+            var t = new Date(data[i - 1].EndTime)
+            tdd.innerHTML = t.getFullYear() + "." + t.getMonth() + "." + t.getDate() + ". " + t.getHours() + ":" + t.getMinutes() + ":" + t.getSeconds();
             break;
           case 7:
-            tdd.innerHTML = data[i - 1].ReleaseDateTime;
+            var t = new Date(data[i - 1].ReleaseDateTime)
+            tdd.innerHTML = t.getFullYear() + "." + t.getMonth() + "." + t.getDate() + ". " + t.getHours() + ":" + t.getMinutes() + ":" + t.getSeconds();
             break;
           case 8:
-            tdd.innerHTML = data[i - 1].DueDateTime;
+            var t = new Date(data[i - 1].DueDateTime)
+            tdd.innerHTML = t.getFullYear() + "." + t.getMonth() + "." + t.getDate() + ". " + t.getHours() + ":" + t.getMinutes() + ":" + t.getSeconds();
             break;
           case 9:
             tdd.innerHTML = data[i - 1].SetupTimeInInt;
@@ -1122,7 +1153,7 @@ function drawWaitBarDiagram() {
     svg.append("g")
       .attr("class", "y-axis")
       .call(yAxis);
-    document.getElementById("kpiChart").appendChild(svg.node());
+    document.getElementById("kpiChart").prepend(svg.node());
   }
 }
 
@@ -1215,28 +1246,37 @@ function drawPieDiagram(piechartdata, location) {
       .style("text-anchor", "middle")
       .style("font-size", 14)
 
+      var div = document.getElementsByName(location)[0];
     var buttonbar = document.createElement('button');
     buttonbar.innerHTML = "Change to bar chart"
     buttonbar.id = "buttonBar"
     buttonbar.onclick = function () {
-      svg.display = "none";
+
       if (location == "kpiChart") {
         //document.getElementById("chartPie").style.display="none";
         //WTF miért nem ?  var elem = document.getElementById("chartPie").remove();
-
-        drawAllocationBarDiagram(piechartdata);
         var elem = document.getElementById("chartPie");
 
-        elem.remove();
+        elem.parentElement.removeChild(elem);
 
         var selelem = document.getElementById("buttonBar");
         selelem.remove();
+        drawAllocationBarDiagram(piechartdata);
+      }
+      else if(location == "dueChart"){
+        var elem = document.getElementById("chartPie");
+
+        elem.parentElement.removeChild(elem);
+
+        var selelem = document.getElementById("buttonBar");
+        selelem.remove();
+        drawDuedateBarChart();
       }
 
     };
     // else drawDueBarDiagram();
   }
-  var div = document.getElementsByName(location)[0];
+
   div.appendChild(buttonbar);
 }
 
@@ -1298,7 +1338,7 @@ function drawAllocationBarDiagram(operationsummachine) {
     svg.append("g")
       .attr("class", "y-axis")
       .call(yAxis);
-    document.getElementById("kpiChart").appendChild(svg.node());
+    document.getElementById("kpiChart").prepend(svg.node());
   }
 }
 
@@ -1311,12 +1351,12 @@ function drawDuedateBarChart() {
   var chartWidth = 400;
 
   var yScale = d3.scaleLinear()
-    .domain([0, d3.max(tardinessjob)+1])
+    .domain([0, d3.max(tardinessjob) + 1])
     .range([0, chartHeight]);
 
 
   var yAxisScale = d3.scaleLinear()
-    .domain([d3.min(tardinessjob), d3.max(tardinessjob)+1])
+    .domain([d3.min(tardinessjob), d3.max(tardinessjob) + 1])
     .range([chartHeight - yScale(d3.min(tardinessjob)), 0])
 
 
@@ -1325,7 +1365,7 @@ function drawDuedateBarChart() {
   svg
     .attr('height', chartHeight + 150)
     .attr('width', chartWidth + 100)
-    .attr("padding","30px")
+    .attr("padding", "30px")
     .style('border', '1px solid');
 
   svg
@@ -1360,10 +1400,10 @@ function drawDuedateBarChart() {
     .data(tardinessjob)
     .join("text")
     .attr("x", function (d, i) { return 34 + margin.left + (i * 1.5) * barWidth + 20; })
-    .attr("y", function (d, i) { return -5+chartHeight - Math.max(0, yScale(d)); })
+    .attr("y", function (d, i) { return -5 + chartHeight - Math.max(0, yScale(d)); })
     .attr("dy", "0.35em")
     .attr("dx", -4)
-    .text((d,i) => "Job "+i+1)
+    .text((d, i) => "Job " + i + 1)
 
   svg.append('g')
     .attr('transform', function (d) {
@@ -1372,6 +1412,12 @@ function drawDuedateBarChart() {
     .call(yAxis);
 
 
-  document.getElementById("kpiChart").appendChild(svg.node());
-
+  document.getElementById("dueChart").prepend(svg.node());
 }
+
+function getDateFromJson() {
+  data.forEach(d => {
+    getdates.push(new Date(d.EndTime));
+  });
+}
+

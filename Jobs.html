@@ -53,12 +53,22 @@
         </div>
         <div id="list" class="maintabcontent">
             <h3>Properties of operations</h3>
-        </div>
+            <div class="tab">
+            <button onclick="openTab(event, 'scheduledata','list')" class="w3-bar-item w3-button tablinks">Schedule Data</button>
+            <button onclick="openTab(event, 'operationsdata','list')" class="w3-bar-item w3-button tablinks">Operations Data</button>
+            <button onclick="openTab(event, 'resourcedata','list')" class="w3-bar-item w3-button tablinks">Resource Data</button>
+            <button onclick="openTab(event, 'prioritydata','list')" class="w3-bar-item w3-button tablinks">Schedule Priority Data</button>
+           </div>
+        
 
+    <div id="scheduledata" class="listtabcontent">asdfg</div>
+    <div id="operationsdata" class="listtabcontent">poiu</div>
+    <div id="resourcedata" class="listtabcontent">eeeee</div>
+    <div id="prioritydata" class="listtabcontent">eeeee</div>
+</div>
         <!-- KPI tab  -->
         <div class="tab">
-            <button onclick="openTab(event, 'optimality','achievement')"
-                class="w3-bar-item w3-button tablinks">Optimality
+            <button onclick="openTab(event, 'optimality','achievement')" class="w3-bar-item w3-button tablinks">Optimality
                 criterion</button>
             <button onclick="openTab(event, 'occupancy','achievement')" class="w3-bar-item w3-button tablinks">Occupancy
                 rate</button>

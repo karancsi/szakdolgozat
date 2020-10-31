@@ -4,33 +4,6 @@
    background-image: linear-gradient(#04806e, #1d8d96,#4e998e,#5cbfb1, #288073, #04806e); 
 }
 
-.menu ul{
-   display: inline-flex;
-   margin:  50px;
-   font-size: 30px;
-}
-.menu ul li{
-   list-style: none;
-   color:#ffffff;
-   padding-left: 40px;
-   padding-right: 40px;
-}
-.menu ul li button{
-   font-style: italic;
-   font-size: 20px;;
-   font-family:"Comic Sans MS", cursive, sans-serif;
-   color: white; 
-   text-decoration: none;
-   border: 3px solid transparent;
-   border-radius: 40px;
-   background-image: linear-gradient(#ffe280,#ccaf4e,#826504 ),radial-gradient(circle at top left, #373737, #ea75f0);
-   background-origin: border-box ;
-   cursor: pointer;
-   display: block;
-   padding-inline-start: 27px;
-   padding-inline-end: 27px;
-}
-
 .banner{
    height: 90%;
    top: 15%;
@@ -133,6 +106,8 @@
  .horizontal {
    margin: 0;
    padding: 0;
+   display:flex;
+  list-style-type: none;
 }
 
 .horizontal li {
@@ -148,3 +123,5 @@
    top:0;
    height: 100%;
 }
+
+
