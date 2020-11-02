@@ -1,6 +1,9 @@
 //Változók deklarálása:
 var chartWidth = 1000, chartHeight = 500, barPadding = 5;
 var data;
+var diadata;
+var jobpriorities = [];
+var technologypriorities = [];
 var machines = [];
 var uniquejobs = [1];
 
@@ -65,8 +68,11 @@ var getdates = [];
 
 //Gantt diagram kirajzolása
 function drawDiagram(diadata) {
+  //diadata = diadata.Description;
   data = diadata.Operations;
   machines = diadata.Resources;
+  jobpriorities = diadata.JobQueuePriorities;
+  technologypriorities = diadata.TechnologyListPriorities;
   var startdate = new Date(diadata.StartDateTime);
   console.log(startdate);
   console.log(d3.max(data, d => d.EndTimeInInt));
@@ -240,28 +246,28 @@ function drawDiagram(diadata) {
     .attr("height", y.bandwidth() - 12)
     .attr("id", (d) => d.OperationId + "innerrect")
     .attr("fill", function (d) {
-    //  for (let i = 0; i < uniquejobs.length; i++) {
-        var ops = [];
-        var maxPerJob =0;
-        for (let j = 0; j < data.length; j++) {
-          if (data[j].JobId == d.JobId) {
-            ops.push(data[j]);
-          }
+      //  for (let i = 0; i < uniquejobs.length; i++) {
+      var ops = [];
+      var maxPerJob = 0;
+      for (let j = 0; j < data.length; j++) {
+        if (data[j].JobId == d.JobId) {
+          ops.push(data[j]);
         }
-        maxPerJob = d3.max(ops, function (d) {
-      
+      }
+      maxPerJob = d3.max(ops, function (d) {
 
-          return d.EndTimeInInt;
-        })
-        console.log("Endtime");
-        console.log(maxPerJob);
-        if (maxPerJob < ops[0].DueDateTimeInInt) {
-          return "green";
-        }
-        else {
-          return "red";
-        }
-      
+
+        return d.EndTimeInInt;
+      })
+      console.log("Endtime");
+      console.log(maxPerJob);
+      if (maxPerJob < ops[0].DueDateTimeInInt) {
+        return "green";
+      }
+      else {
+        return "red";
+      }
+
     })
     .attr("opacity", 0.01)
     .attr("display", d => (((d.EndTimeInInt - d.StartTimeInInt) / max) < 0.01) ? "none" : "block")
@@ -271,7 +277,7 @@ function drawDiagram(diadata) {
         tooltipdiv.style.opacity = 0.9;
         tooltipdiv.innerHTML = "Job " + e.JobId + "Operation index " + e.OperationIndex +
           "<br>Setup time:" + e.SetupTimeInInt + "<br> Duration: "
-          + (e.EndTimeInInt - e.StartTimeInInt) + "<br> Due date: " + e.DueDateTime.getFullYear()+ "." + e.DueDateTime.getMonth() +"."+e.DueDateTime.getDate()+"."+ "<br> Prority:" + e.Priority;
+          + (e.EndTimeInInt - e.StartTimeInInt) + "<br> Due date: " + e.DueDateTime.getFullYear() + "." + e.DueDateTime.getMonth() + "." + e.DueDateTime.getDate() + "." + "<br> Prority:" + e.Priority;
         tooltipdiv.style.left = x(e.StartTimeInInt) + 10 + "px";
         tooltipdiv.style.top = y(getMachineIndex(e) - 1) + 225 + "px";
         tooltipdiv.style.display = "block";
@@ -359,6 +365,7 @@ function drawDiagram(diadata) {
 
   Occupancy();
   DueDate();
+  drawListComponents(diadata);
   //drawDuedateBarChart();
 }
 
@@ -441,6 +448,7 @@ function receivedText(e) {
   data = JSON.parse(lines);
   drawDiagram(data);
   openTab(event, 'list', 'main');
+  openTab(event, 'scheduledata', 'list');
 }
 
 //Tabpanel (main,kpi)
@@ -591,7 +599,7 @@ function createCrTable(selectedOption) {
   var tbl = document.createElement('table');
   tbl.className = "crtable"
   tbl.style = "table";
-  tbl.style.width = '50%';
+  tbl.style.width = '80%';
 
   var labell = document.createElement('label');
   switch (selectedOption) {
@@ -615,7 +623,9 @@ function createCrTable(selectedOption) {
         else {
           for (let i = 0; i < data.length; i++) {
             if (data[i].EndTimeInInt == max) {
-              td.innerHTML = data[i].EndTime + "( in munites: " + data[i].EndTimeInInt + " )";
+              var t = new Date(data[i].EndTime)
+              td.innerHTML = t.getFullYear() + "." + t.getMonth() + "." + t.getDate() + ". " + t.getHours() + ":" + t.getMinutes() + ":" + t.getSeconds()+ " ( in munites: " + data[i].EndTimeInInt + ")";
+
             }
           }
         }
@@ -808,7 +818,9 @@ function DueDate() {
           else {
             data.forEach(element => {
               if (element.JobId == uniquejobs[index]) {
-                td.innerHTML = data[i].EndTime + "( in munites: " + data[i].EndTimeInInt + " )";
+                var t = new Date(element.DueDateTime)
+                td.innerHTML = t.getFullYear() + "." + t.getMonth() + "." + t.getDate() + ". " + t.getHours() + ":" + t.getMinutes() + ":" + t.getSeconds() + " ( in munites: " + element.EndTimeInInt + " )";
+             
               }
             });
           }
@@ -900,7 +912,6 @@ function CalculationKPI(data, sel) {
       utilization += wait;
       utilizationsum += wait;
 
-      console.log(utilization);
       var operationsumpermachine = 0;
       for (let i = 0; i < data.length; i++) {
         for (let k = 0; k < machines[j].OperationListById.length; k++) {
@@ -911,7 +922,6 @@ function CalculationKPI(data, sel) {
           }
         }
       }
-      console.log(wait);
       utilization -= wait; //Rendszer kihasználtság, mennyit ment, a várakozást vonod ki
       if (isarraysinitialized == false && j < machines.length) {
         utilizationmachine.push((d3.max(seged, function (d) {
@@ -923,7 +933,6 @@ function CalculationKPI(data, sel) {
       }
     }
     seged = [];
-
   }
 
   isarraysinitialized = true;
@@ -1207,7 +1216,7 @@ function drawPieDiagram(piechartdata, location) {
 
 
           tooltipslice.style.opacity = 0.9;
-          tooltipslice.innerHTML = machines[i].Name + " " + e.value + " op" + (e.value / operationsum) * 100 + "%";
+          tooltipslice.innerHTML = machines[i].Name + " " + e.value + " operations" + Math.round((e.value / operationsum) * 100) + "%";
           tooltipslice.style.left = 110 + 10 + "px";
           tooltipslice.style.top = 170 + "px";
           tooltipslice.style.display = "inline";
@@ -1215,7 +1224,7 @@ function drawPieDiagram(piechartdata, location) {
         }
         if (location == "due") {
           tooltipslice.style.opacity = 0.9;
-          tooltipslice.innerHTML = machines[i].Name + " " + e.value + " op" + (e.value / operationsum) * 100 + "%";
+          tooltipslice.innerHTML = machines[i].Name + " " + e.value + " job " + Math.round((e.value / jobintime.length) * 100) + "%";
           tooltipslice.style.left = x(e.value) + 10 + "px";
           tooltipslice.style.top = y(e.value) + 170 + "px";
           tooltipslice.style.display = "inline";
@@ -1246,7 +1255,7 @@ function drawPieDiagram(piechartdata, location) {
       .style("text-anchor", "middle")
       .style("font-size", 14)
 
-      var div = document.getElementsByName(location)[0];
+    var div = document.getElementsByName(location)[0];
     var buttonbar = document.createElement('button');
     buttonbar.innerHTML = "Change to bar chart"
     buttonbar.id = "buttonBar"
@@ -1263,7 +1272,7 @@ function drawPieDiagram(piechartdata, location) {
         selelem.remove();
         drawAllocationBarDiagram(piechartdata);
       }
-      else if(location == "dueChart"){
+      else if (location == "dueChart") {
         var elem = document.getElementById("chartPie");
 
         elem.parentElement.removeChild(elem);
@@ -1276,7 +1285,6 @@ function drawPieDiagram(piechartdata, location) {
     };
     // else drawDueBarDiagram();
   }
-
   div.appendChild(buttonbar);
 }
 
@@ -1338,13 +1346,29 @@ function drawAllocationBarDiagram(operationsummachine) {
     svg.append("g")
       .attr("class", "y-axis")
       .call(yAxis);
+
+      var buttonpie = document.createElement('button');
+      buttonpie.innerHTML = "Change to pie chart"
+      buttonpie.id = "buttonPie"
+      buttonpie.onclick = function () {
+  
+          //document.getElementById("chartPie").style.display="none";
+          //WTF miért nem ?  var elem = document.getElementById("chartPie").remove();
+          var elem = document.getElementById("chartAllocation");
+  
+          elem.parentElement.removeChild(elem);
+  
+          var selelem = document.getElementById("buttonPie");
+          selelem.remove();
+          drawPieDiagram(chartdata,"kpiChart");
+      }
+    document.getElementById("kpiChart").prepend(buttonpie);
     document.getElementById("kpiChart").prepend(svg.node());
   }
 }
 
 function drawDuedateBarChart() {
 
-  console.log(tardinessjob);
   var margin = { left: 20, right: 30, top: 30, bottom: 0 };
   var barWidth = 30;  // Width of the bars
   var chartHeight = 350;  // Height of chart, from x-axis (ie. y=0)
@@ -1354,18 +1378,16 @@ function drawDuedateBarChart() {
     .domain([0, d3.max(tardinessjob) + 1])
     .range([0, chartHeight]);
 
-
   var yAxisScale = d3.scaleLinear()
     .domain([d3.min(tardinessjob), d3.max(tardinessjob) + 1])
     .range([chartHeight - yScale(d3.min(tardinessjob)), 0])
-
-
 
   var svg = d3.create('svg');
   svg
     .attr('height', chartHeight + 150)
     .attr('width', chartWidth + 100)
     .attr("padding", "30px")
+    .attr("id","DueBar")
     .style('border', '1px solid');
 
   svg
@@ -1411,6 +1433,22 @@ function drawDuedateBarChart() {
     })
     .call(yAxis);
 
+    var buttonduebar = document.createElement('button');
+    buttonduebar.innerHTML = "Change to pie chart"
+    buttonduebar.id = "buttonDueBar"
+    buttonduebar.onclick = function () {
+
+        //document.getElementById("chartPie").style.display="none";
+        //WTF miért nem ?  var elem = document.getElementById("chartPie").remove();
+        var elem = document.getElementById("DueBar");
+
+        elem.parentElement.removeChild(elem);
+
+        var selelem = document.getElementById("buttonDueBar");
+        selelem.remove();
+        drawPieDiagram(jobintime,"dueChart");
+    }
+  document.getElementById("dueChart").prepend(buttonduebar);
 
   document.getElementById("dueChart").prepend(svg.node());
 }
@@ -1421,3 +1459,108 @@ function getDateFromJson() {
   });
 }
 
+function drawListComponents(diadata) {
+  //Schedule
+  var div = document.getElementById('scheduledata');
+  var tbl = document.createElement('table');
+  tbl.style = "table";
+  for (let i = 0; i < 3; i++) {
+    var tr = document.createElement('tr');
+    for (let j = 0; j < 2; j++) {
+      var td = document.createElement("td");
+      td.appendChild(document.createTextNode('\u0020'))
+      if (i == 0 && j == 0) td.innerHTML = "Name of Simulation";
+      if (i == 1 && j == 0) td.innerHTML = "Simulation Start Date";
+      if (i == 2 && j == 0) td.innerHTML = "Simulation End Date";
+      if (i== 0 && j== 1)  td.innerHTML = diadata.SimulationName;
+       if (i== 1 && j== 1) {
+        var t = new Date(diadata.StartDateTime);
+        td.innerHTML = t.getFullYear() + "." +t.getMonth()+"."+ t.getDate() + ".";
+       } 
+       if (i== 2 && j== 1)  {
+         var t = new Date(diadata.EndDateTime);
+         td.innerHTML = t.getFullYear() + "." +t.getMonth()+"."+ t.getDate() + ".";
+       }
+      tr.appendChild(td);
+    }
+    tbl.appendChild(tr);
+  }
+  div.appendChild(tbl);
+
+  //Resource
+  var div = document.getElementById('resourcedata');
+  var tbl = document.createElement('table');
+  tbl.style = "table";
+  for (let i = 0; i < machines.length + 1; i++) {
+    var tr = document.createElement('tr');
+    for (let j = 0; j < 4; j++) {
+      var td = document.createElement("td");
+      td.appendChild(document.createTextNode('\u0020'))
+      if (i == 0 && j == 0) td.innerHTML = "Resource Id";
+      if (i == 0 && j == 1) td.innerHTML = "Resource Name";
+      if (i == 0 && j == 2) td.innerHTML = "Operation List";
+      if (i == 0 && j == 3) td.innerHTML = "Availability";
+      if (i != 0 && j == 0) td.innerHTML = machines[i - 1].Id;
+      if (i != 0 && j == 1) td.innerHTML = machines[i - 1].Name;
+      if (i != 0 && j == 2) td.innerHTML = machines[i - 1].OperationListById;
+      if (i != 0 && j == 3) {
+        for (let k = 0; k < 1; k++) {
+          td.innerHTML = machines[i - 1].Availability[k].StartTimeInInt;
+        }
+      }
+      tr.appendChild(td);
+    }
+    tbl.appendChild(tr);
+  }
+  div.appendChild(tbl);
+
+   //Job Priority
+   var labelJP = document.createElement('label');
+   labelJP.innerHTML = "Job Priorities";
+   var div = document.getElementById('prioritydata');
+   var tbl = document.createElement('table');
+   tbl.style = "table";
+   for (let i = 0; i < jobpriorities.length + 1; i++) {
+     var tr = document.createElement('tr');
+     for (let j = 0; j < 3; j++) {
+       var td = document.createElement("td");
+       td.appendChild(document.createTextNode('\u0020'))
+       if (i == 0 && j == 0) td.innerHTML = "Name";
+       if (i == 0 && j == 1) td.innerHTML = "Type";
+       if (i == 0 && j == 2) td.innerHTML = "Value";
+        if (i != 0 && j == 0) td.innerHTML = jobpriorities[i - 1].Name;
+       if (i != 0 && j == 1) td.innerHTML = jobpriorities[i - 1].Type;
+       if (i != 0 && j == 2) td.innerHTML = jobpriorities[i - 1].Value;
+      
+       tr.appendChild(td);
+     }
+     tbl.appendChild(tr);
+   }
+   div.appendChild(labelJP);
+   div.appendChild(tbl);
+
+   //Technology Priority
+   var labelTP = document.createElement('label');
+   labelTP.innerHTML = "Techonology  Priorities";
+   var div = document.getElementById('prioritydata');
+   var tbl = document.createElement('table');
+   tbl.style = "table";
+   for (let i = 0; i < technologypriorities.length + 1; i++) {
+     var tr = document.createElement('tr');
+     for (let j = 0; j < 3; j++) {
+       var td = document.createElement("td");
+       td.appendChild(document.createTextNode('\u0020'))
+       if (i == 0 && j == 0) td.innerHTML = "Name";
+       if (i == 0 && j == 1) td.innerHTML = "Type";
+       if (i == 0 && j == 2) td.innerHTML = "Value";
+        if (i != 0 && j == 0) td.innerHTML = technologypriorities[i - 1].Name;
+       if (i != 0 && j == 1) td.innerHTML = technologypriorities[i - 1].Type;
+       if (i != 0 && j == 2) td.innerHTML = technologypriorities[i - 1].Value;
+      
+       tr.appendChild(td);
+     }
+     tbl.appendChild(tr);
+   }
+   div.appendChild(labelTP);
+   div.appendChild(tbl);
+}
