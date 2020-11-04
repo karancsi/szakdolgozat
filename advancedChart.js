@@ -71,8 +71,8 @@ function drawDiagram(diadata) {
   diadata = diadata;
   data = diadata.Operations;
   machines = diadata.Resources;
-
-  console.log(data);
+  setMachineId();
+  console.log(machines);
   jobpriorities = diadata.JobQueuePriorities;
   technologypriorities = diadata.TechnologyListPriorities;
   var startdate = new Date(diadata.StartDateTime);
@@ -88,10 +88,11 @@ function drawDiagram(diadata) {
     .range(["#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928",
       "#8dd3c7", "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", "#d9d9d9", "#bc80bd", "#ccebc5", "#ffed6f"])
 
-  var barHeight = 18
+  var barHeight = 90
   var margin = ({ top: 30, right: 20, bottom: 10, left: 120 })
 
-  var height = Math.ceil((data.length + 0.1) * barHeight) + margin.top + margin.bottom
+  var height = Math.ceil((machines.length /*+ 0.1*/) * barHeight) + margin.top + margin.bottom
+  chartHeight = height + margin.top + margin.bottom;
   var width = d3.max(data, d => d.EndTimeInInt) + 1200
 
   var svg = d3.select("svg")
@@ -180,7 +181,7 @@ function drawDiagram(diadata) {
     .data(data)
     .join("rect")
     .attr("x", (d) => x(0))
-    .attr("y", (d) => y(getMachineIndex(d) - 1) + 50)
+    .attr("y", (d) => y(getMachineIndex(d) ) + 50)
     .attr("width", d3.max(data, d => x(d.EndTimeInInt)))
     .attr("height", y.bandwidth())
     .on("click", function (e) {
@@ -197,7 +198,7 @@ function drawDiagram(diadata) {
     .data(data)
     .join("rect")
     .attr("x", (d) => x(d.StartTimeInInt))
-    .attr("y", (d) => y(getMachineIndex(d) - 1) + 50)
+    .attr("y", (d) => y(getMachineIndex(d) ) + 50)
     .attr("width", d => x(d.EndTimeInInt) - x(d.StartTimeInInt))
     .attr("height", y.bandwidth())
     .attr("id", (d) => d.OperationIndex + "rectID" + d.JobId)
@@ -210,7 +211,7 @@ function drawDiagram(diadata) {
           "<br>Setup time:" + e.SetupTimeInInt + "<br> Duration: "
           + (e.EndTimeInInt - e.StartTimeInInt) + "<br> Due date: " + e.DueDateTime.getDate + "<br> Prority:" + e.Priority;
         tooltipdiv.style.left = x(e.StartTimeInInt) + 10 + "px";
-        tooltipdiv.style.top = y(getMachineIndex(e) - 1) + 225 + "px";
+        tooltipdiv.style.top = y(getMachineIndex(e) ) + 225 + "px";
         tooltipdiv.style.display = "block";
       }
       else {
@@ -245,7 +246,7 @@ function drawDiagram(diadata) {
     .data(data)
     .join("rect")
     .attr("x", (d) => x(d.StartTimeInInt) + 5)
-    .attr("y", (d) => y(getMachineIndex(d) - 1) + 55)
+    .attr("y", (d) => y(getMachineIndex(d) ) + 55)
     .attr("width", d => x(d.EndTimeInInt) - x(d.StartTimeInInt) - 12)
     .attr("height", y.bandwidth() - 12)
     .attr("id", (d) => d.OperationId + "innerrect")
@@ -278,11 +279,12 @@ function drawDiagram(diadata) {
       var tooltipdiv = document.getElementById("tooltip");
       if (document.getElementById("myCheck").checked == false) {
         tooltipdiv.style.opacity = 0.9;
+        var dueDateTime = convertToDate(e.DueDateTime);
         tooltipdiv.innerHTML = "Job " + e.JobId + "Operation index " + e.OperationIndex +
           "<br>Setup time:" + e.SetupTimeInInt + "<br> Duration: "
-          + (e.EndTimeInInt - e.StartTimeInInt) + "<br> Due date: " + e.DueDateTime.getFullYear() + "." + e.DueDateTime.getMonth() + "." + e.DueDateTime.getDate() + "." + "<br> Prority:" + e.Priority;
+          + (e.EndTimeInInt - e.StartTimeInInt) + "<br> Due date: " + dueDateTime.getFullYear() + "." + dueDateTime.getMonth() + "." + dueDateTime.getDate() + "." + "<br> Prority:" + e.Priority;
         tooltipdiv.style.left = x(e.StartTimeInInt) + 10 + "px";
-        tooltipdiv.style.top = y(getMachineIndex(e) - 1) + 225 + "px";
+        tooltipdiv.style.top = y(getMachineIndex(e) ) + 225 + "px";
         tooltipdiv.style.display = "block";
       }
       else {
@@ -301,7 +303,7 @@ function drawDiagram(diadata) {
     .data(data)
     .join("rect")
     .attr("x", (d) => x(d.StartTimeInInt - d.SetupTimeInInt))
-    .attr("y", (d) => y(getMachineIndex(d) - 1) + 50)
+    .attr("y", (d) => y(getMachineIndex(d) ) + 50)
     .attr("width", d => x(d.StartTimeInInt) - x(d.StartTimeInInt - d.SetupTimeInInt))
     .attr("height", y.bandwidth())
     .attr("id", (d) => d.OperationIndex + "setup")
@@ -372,7 +374,12 @@ function drawDiagram(diadata) {
   exportJson();
   //drawDuedateBarChart();
 }
-
+function convertToDate(value) {
+    if (typeof value === 'string') {
+      return new Date(Date.parse(value));
+    }
+    return value;
+  }
 //Chart xAxis ticks data - days
 function addDays(date, days) {
   var result = new Date(date);
@@ -388,17 +395,18 @@ function setMachineId(){
 }
 
 function getMachineIndex(d) {
-  var idx = -1;
-  for (i in machines) {
-      idx++;
-      var machine = machines[i];
-      for (j in machine.OperationListById) {
-          if (d.OperationId == machine.OperationListById[j]) {
-            return idx;
+    var idx = -1;
+    for (i in machines) {
+        idx++;
+        var machine = machines[i];
+        for (j in machine.OperationListById) {
+            if (d.OperationId == machine.OperationListById[j]) {
+              return idx;
+      }
     }
   }
 }
-}
+
 //Unique jobs selection
 function checkUniqueJob(jobs) {
   for (let i = 0; i < data.length; i++) {

@@ -120,5 +120,8 @@ td:hover{
   #innerrect{
     background-color: whitesmoke;
   }
-
+ #DueBar{
+   overflow-x: scroll;
+   overflow-y: scroll;
+ }
 

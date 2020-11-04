@@ -24,16 +24,16 @@
       "OperationId": 2,
       "OperationName": "Cut Excess Material",
       "JobId": 1,
-      "JobName": "Bronze Plate Order From XY Company",
+      "JobName": "Bronze Plate Order From X Company",
       "OperationIndex": 1,
       "StartTime": "2020-10-21T11:00:00",
       "StartTimeInInt": 25,
-      "EndTime": "2020-10-21T14:45:00",
+      "EndTime": "2020-10-21T11:55:00",
       "EndTimeInInt": 55,
-      "ReleaseDateTime": "2020-10-21T08:00:00",
+      "ReleaseDateTime": "2020-10-21T10:55:00",
       "ReleaseDateTimeInInt": 20,
-      "DueDateTime": "2020-10-21T17:00:00",
-      "DueDateTimeInInt": 110,
+      "DueDateTime": "2020-10-21T13:00:00",
+      "DueDateTimeInInt": 145,
       "SetupTimeInInt": 0,
       "Priority": 7
     },
@@ -322,7 +322,42 @@
           "EndTimeInInt": 574
         }
       ]
+    },
+    {
+      "Id": 66,
+      "Name": "Cutting",
+      "OperationListById": [
+        3,
+        6,
+        9,
+        12,
+        15
+      ],
+      "Availability": [
+        {
+          "StartTimeInInt": -25,
+          "EndTimeInInt": 574
+        }
+      ]
+    },
+    {
+      "Id":54,
+      "Name": "Cutting",
+      "OperationListById": [
+        3,
+        6,
+        9,
+        12,
+        15
+      ],
+      "Availability": [
+        {
+          "StartTimeInInt": -25,
+          "EndTimeInInt": 574
+        }
+      ]
     }
+
   ],
   "JobQueuePriorities": [
     {
