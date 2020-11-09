@@ -33,7 +33,7 @@
       "ReleaseDateTime": "2020-10-21T10:55:00",
       "ReleaseDateTimeInInt": 20,
       "DueDateTime": "2020-10-21T13:00:00",
-      "DueDateTimeInInt": 145,
+      "DueDateTimeInInt": 110,
       "SetupTimeInInt": 0,
       "Priority": 7
     },
@@ -257,7 +257,59 @@
       "DueDateTimeInInt": 250,
       "SetupTimeInInt": 0,
       "Priority": 3
+    },
+    {
+      "OperationId": 16,
+      "OperationName": "Grind",
+      "JobId": 6,
+      "JobName": "Bronze Sword Order From WW Company",
+      "OperationIndex": 0,
+      "StartTime": "2020-10-22T01:55:00",
+      "StartTimeInInt": 310,
+      "EndTime": "2020-10-22T02:20:00",
+      "EndTimeInInt": 330,
+      "ReleaseDateTime": "2020-10-21T12:00:00",
+      "ReleaseDateTimeInInt": 300,
+      "DueDateTime": "2020-10-28T12:00:00",
+      "DueDateTimeInInt": 403,
+      "SetupTimeInInt": 0,
+      "Priority": 3
+    },
+    {
+      "OperationId": 17,
+      "OperationName": "Grind",
+      "JobId": 6,
+      "JobName": "Bronze Sword Order From WW Company",
+      "OperationIndex": 1,
+      "StartTime": "2020-10-22T01:55:00",
+      "StartTimeInInt": 350,
+      "EndTime": "2020-10-22T02:20:00",
+      "EndTimeInInt": 380,
+      "ReleaseDateTime": "2020-10-21T12:00:00",
+      "ReleaseDateTimeInInt": 300,
+      "DueDateTime": "2020-10-28T12:00:00",
+      "DueDateTimeInInt": 403,
+      "SetupTimeInInt": 10,
+      "Priority": 3
+    },
+    {
+      "OperationId": 18,
+      "OperationName": "Grind",
+      "JobId": 6,
+      "JobName": "Bronze Sword Order From WW Company",
+      "OperationIndex": 2,
+      "StartTime": "2020-10-22T01:55:00",
+      "StartTimeInInt": 390,
+      "EndTime": "2020-10-22T02:20:00",
+      "EndTimeInInt": 410,
+      "ReleaseDateTime": "2020-10-21T12:00:00",
+      "ReleaseDateTimeInInt": 300,
+      "DueDateTime": "2020-10-28T12:00:00",
+      "DueDateTimeInInt": 403,
+      "SetupTimeInInt": 0,
+      "Priority": 3
     }
+
   ],
   "Resources": [
     {
@@ -272,8 +324,8 @@
       ],
       "Availability": [
         {
-          "StartTimeInInt": -25,
-          "EndTimeInInt": 574
+          "StartTimeInInt": 0,
+          "EndTimeInInt": 12
         }
       ]
     },
@@ -289,7 +341,7 @@
       ],
       "Availability": [
         {
-          "StartTimeInInt": -25,
+          "StartTimeInInt": 30,
           "EndTimeInInt": 34
         },
         {
@@ -318,42 +370,35 @@
       ],
       "Availability": [
         {
-          "StartTimeInInt": -25,
-          "EndTimeInInt": 574
+          "StartTimeInInt": -20,
+          "EndTimeInInt": 50
         }
       ]
     },
     {
       "Id": 66,
-      "Name": "Cutting",
+      "Name": "Cutting2",
       "OperationListById": [
-        3,
-        6,
-        9,
-        12,
-        15
+        16,
+        18
       ],
       "Availability": [
         {
-          "StartTimeInInt": -25,
-          "EndTimeInInt": 574
+          "StartTimeInInt": 0,
+          "EndTimeInInt": 5
         }
       ]
     },
     {
       "Id":54,
-      "Name": "Cutting",
+      "Name": "Cutting3",
       "OperationListById": [
-        3,
-        6,
-        9,
-        12,
-        15
+        17
       ],
       "Availability": [
         {
-          "StartTimeInInt": -25,
-          "EndTimeInInt": 574
+          "StartTimeInInt":40,
+          "EndTimeInInt":80
         }
       ]
     }

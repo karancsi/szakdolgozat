@@ -49,7 +49,7 @@
             <svg name="chart" id="chart" class="chart"></svg>
             <div id="tooltip" style="position: absolute; opacity: 0;" class="tooltip"></div>
             <script src="https://d3js.org/d3.v5.min.js"></script>
-            <script src="advancedChart.js"></script>
+            <script src="realChart.js"></script>
         </div>
         <div id="list" class="maintabcontent">
             <h3>Properties of simulation</h3>
@@ -75,6 +75,9 @@
             <button onclick="openTab(event, 'kpi','achievement')" class="w3-bar-item w3-button tablinks">KPI</button>
             <button onclick="openTab(event, 'due','achievement')" class="w3-bar-item w3-button tablinks">Due
                 Dates</button>
+                <button onclick="openTab(event, 'download','achievement')" class="w3-bar-item w3-button tablinks">Download 
+                    Performance Indicator</button>
+
         </div>
         <ul class="horizontal">
             <li>
@@ -94,6 +97,9 @@
                         <button id="innerrect" onclick="showDueDate()" class="w3-bar-item w3-button tablinks">Show in
                             the
                             Chart</button>
+                    </div>
+                    <div name="download" id="download" class="tabcontent">
+                        <h3>Download Performance Indicator .json file</h3>
                     </div>
                 </div>
             </li>

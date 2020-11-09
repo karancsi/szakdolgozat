@@ -66,6 +66,10 @@ var tickdata = [];
 //Dátumok
 var getdates = [];
 
+//Availability
+var availbilityseged = 0;
+var showMachineA = 0;
+
 //Export
 var expdata = [];
 var expcriterion = [];
@@ -73,6 +77,7 @@ var expcriterionL = [];
 
 //Gantt diagram kirajzolása
 function drawDiagram(diadata) {
+    diadata = diadata;
     data = diadata.Operations;
     machines = diadata.Resources;
     setMachineId();
@@ -323,6 +328,28 @@ function drawDiagram(diadata) {
         .attr("height", y.bandwidth())
         .attr("id", (d) => d.OperationIndex + "setup")
 
+    //Append machine rect
+    var gm = d3.max(data, function (d) {
+        return d.EndTimeInInt;
+    });
+    for (let j = 0; j < machines.length; j++) {
+        for (let i = 0; i < gm; i += 1440) {
+            var machinerect = svg.append("g")
+                .attr("fill", "yellow")
+                .selectAll("rect")
+                .data(machines[j].Availability)
+                .join("rect")
+                .attr("x", (d) => x(d.StartTimeInInt < 0 ? 0 + i : d.StartTimeInInt + i))
+                .attr("y", (d) => y(j) + 50)
+                .attr("width", d => x(d.EndTimeInInt) - x(d.StartTimeInInt))
+                .attr("height", y.bandwidth())
+                .attr("id", "A" + availbilityseged)
+                .style("opacity", function (d) {
+                    availbilityseged += 1;
+                    return 0;
+                });
+        }
+    }
 
     //Information text on the operation
     svg.append("g")
@@ -373,6 +400,21 @@ function drawDiagram(diadata) {
         document.getElementById('chartDiv').prepend(checkboxtext);
         document.getElementById("checkboxText").append(checkbox);
     }
+
+    //Turn on machines rect display
+    if (document.contains(document.getElementById("myMachineCheck"))) { }
+    else {
+        var buttonavailability = document.createElement('button');
+        buttonavailability.id = "myMachineCheck";
+        buttonavailability.innerHTML = "Machine availability on chart"
+        buttonavailability.onclick = function () {
+            machineAvailability();
+        }
+        document.getElementById('chartDiv').prepend(buttonavailability);
+        //document.getElementById("checkboxText1").append(checkbox1);
+
+    }
+
     style();
     drawList(data);
     Criterion();
@@ -397,6 +439,29 @@ function style() {
         
     }*/
 }
+function machineAvailability() {
+ 
+    showMachineA += 1;
+    for (let i = 0; i < availbilityseged; i++) {
+      var d = document.getElementById("A" + i);
+      if (d != null && showMachineA % 2 != 0) {
+        d.style.opacity = 1;
+        for (let i = 0; i < data.length; i++) {
+          var currentrect = document.getElementById(data[i].OperationIndex + "rectID" + data[i].JobId);
+          currentrect, style.opacity = 0.2;
+        }
+  
+      }
+      else {
+        if (d != null) d.style.opacity = 0;
+        for (let i = 0; i < data.length; i++) {
+          varcurrentrect = document.getElementById(data[i].OperationIndex + "rectID" + data[i].JobId);
+          currentrect, style.opacity = 1;
+         }
+        }
+      }
+    }
+
 
 function convertToDate(value) {
     if (typeof value === 'string') {
@@ -516,7 +581,8 @@ function openTab(evt, id, type) {
             case "download":
                 exportJson();
                 document.getElementById("kpiChart").style.display = "none";
-                document.getElementById("kpiDue").style.display = "none";
+                document.getElementById("dueChart").style.display = "none";
+                document.getElementById("due").style.display = "none";
                 break;
             case "optimality":
                 document.getElementById("kpiChart").style.display = "none";
@@ -1179,8 +1245,8 @@ function drawWaitBarDiagram() {
 
     var bb = document.getElementById("buttonBar");
     var bp = document.getElementById("buttonPie");
-    if (typeof bb !== 'undefined') bb.parentElement.removeChild(bb);
-    else if (typeof bp !== 'undefined') bp.parentElement.removeChild(bb);
+    if (typeof bb !== 'undefined' ||  bb !== 'null') bb.parentElement.removeChild(bb);
+    else if (typeof bp !== 'undefined'  ||  bp !== 'null') bp.parentElement.removeChild(bb);
 
     for (let i = 0; i < kpicomponent.length; i++) {
         kpicomponent[i].parentElement.removeChild(kpicomponent[i]);
@@ -1272,8 +1338,7 @@ function drawPieDiagram(piechartdata, location) {
         var pie = d3.pie()
             .value(function (d) { return d.value; })
         var data_ready = pie(d3.entries(chartdata))
-        console.log("asddd");
-        console.log(data_ready);
+
         var arcGenerator = d3.arc()
             .innerRadius(0)
             .outerRadius(radius)
@@ -1314,8 +1379,7 @@ function drawPieDiagram(piechartdata, location) {
                     tooltipslice.style.left = x(e.value) + 10 + "px";
                     tooltipslice.style.top = y(e.value) + 170 + "px";
                     tooltipslice.style.display = "inline";
-                    console.log(x(e.value) + 10);
-                    console.log(y(e.value) + 170);
+
                 }
                 document.getElementById(location).append(tooltipslice);
             }).on("mouseout", function (e) {
@@ -1386,12 +1450,11 @@ function drawAllocationBarDiagram(operationsummachine) {
     }
     //Data
     var chartdata = operationsummachine;
-    console.log(chartdata);
     if (typeof chartAllocation === 'undefined') {
         margin = ({ top: 20, right: 0, bottom: 30, left: 0 })
         const svg = d3.create("svg")
             .attr("viewBox", [0, 0, width, height])
-            .attr("width", 450 + operationsum)
+            .attr("width", 460 + operationsum)
             .attr("height", 420)
             .attr("id", "chartAllocation")
             .attr("position", "relative")
@@ -1676,7 +1739,7 @@ function exportJson() {
     exportdata.Criterion.push({ Cmax: expcriterion[0], Csum: expcriterion[1] });
     exportdata.Criterion.push(
         {
-            Utilization:Math.round((utilization / utilizationsum) * 100, 1)+"%",
+            Utilization: Math.round((utilization / utilizationsum) * 100, 1) + "%",
             NumberOfSetup: setupcount,
             SumOfSetup: setupsum,
             MaxOfSetup: maxsetup,
