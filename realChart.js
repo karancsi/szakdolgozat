@@ -92,7 +92,8 @@ function drawDiagram(diadata) {
     }
 
     checkUniqueJob(uniquejobs);
-    var colors = ["b07156", "0b6e4f", "7d1d3f", "5bc0be", "412234", "ccbcbc", "52414c", "d1495b", "efa7a7", "eddea4",
+    var colors = ["b07156", "9a879d", "169873", "7a3b69", "563440", "b2945b", "023436", "f5ee9e", "ff6978", "1be7ff", "ff5714",
+        "0b6e4f", "7d1d3f", "5bc0be", "412234", "ccbcbc", "52414c", "d1495b", "efa7a7", "eddea4",
         "c0e8f9", "0e3b43", "734b5e", "d8a47f", "ace4aa", "ef8354", "a7bed3", "7d82b8", "33ca7f", "eddea4",
         "628395", "e5fcf5", "734b5e", "41521f", "26a96c", "d45113", "ffa69e", "fe4a49", "33ca7f", "ffa69e",
         "664c43", "542344", "bfd1e5", "2b2d42", "8d99ae", "fa7e61", "f44174", "f46036", "1b998b", "c5d86d"]
@@ -200,6 +201,8 @@ function drawDiagram(diadata) {
             }
         })
 
+
+
     //Different colored rects, when machine is working
     var rects = svg.append("g")
         .selectAll("rect")
@@ -223,14 +226,13 @@ function drawDiagram(diadata) {
                 tooltipdiv.innerHTML = "Job " + e.JobId + " Operation index " + e.OperationIndex +
                     "<br>Setup time:" + e.SetupTimeInInt + "<br> Duration: "
                     + (e.EndTimeInInt - e.StartTimeInInt) + "<br> Due date: " + dueDateTime.getFullYear() + "." + dueDateTime.getMonth() + "." + dueDateTime.getDate() + "." + "<br> Prority:" + e.Priority;
-                /* tooltipdiv.style.left = function (d) {
-                      return x(d.StartTimeInInt) + 10 + "px";
-                    //if (d.StartTimeInInt < 1000) else return d.StartTimeInInt - 410 + "px";
-                 }*/
-                tooltipdiv.style.left = x(e.StartTimeInInt) + 10 + "px";
 
+                if (e.StartTimeInInt < 1000) tooltipdiv.style.left = x(e.StartTimeInInt) + 10 + "px";
+                else tooltipdiv.style.left = e.StartTimeInInt / 1000 + 410 + "px";
+                // tooltipdiv.style.left = x(e.StartTimeInInt) + 10 + "px";
 
-                tooltipdiv.style.top = y(getMachineIndex(e)) + 225 + "px";
+                if (y(getMachineIndex(e)) < 500) tooltipdiv.style.top = y(getMachineIndex(e)) + 225 + "px";
+                else tooltipdiv.style.top = y(getMachineIndex(e)) / 500 + 510 + "px";
 
                 tooltipdiv.style.display = "block";
             }
@@ -254,12 +256,31 @@ function drawDiagram(diadata) {
                 }
             }
         })
-
-
-    //Append innerrect, green or red, the job is in time or not
+    //Information text on the operation
     const max = d3.max(data, function (d) {
         return d.EndTimeInInt;
     });
+    svg.append("g")
+        .attr("fill", "black")
+        .attr("text-anchor", "end")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 12)
+        .selectAll("text")
+        .data(data)
+        .join("text")
+        .attr("x", d => (x(d.EndTimeInInt) - 5))
+        .attr("y", (d) => y(getMachineIndex(d)) + margin.top + y.bandwidth())
+        .attr("dy", "0.35em")
+        .attr("dx", -4)
+        .attr("id", (d) => d.OperationIndex + "innerrecttext")
+        .text(function (d) {
+            var v = "Job " + d.JobId + " Op " + d.OperationIndex;
+            return v;
+        })
+        .attr("display", d => (((d.EndTimeInInt - d.StartTimeInInt) / max) < 0.01) ? "none" : "block");
+
+    //Append innerrect, green or red, the job is in time or not
+
     var innerrects = svg.append("g")
         .attr("fill", "black")
         .selectAll("rect")
@@ -333,43 +354,63 @@ function drawDiagram(diadata) {
         return d.EndTimeInInt;
     });
     for (let j = 0; j < machines.length; j++) {
-        for (let i = 0; i < gm; i += 1440) {
-            var machinerect = svg.append("g")
-                .attr("fill", "yellow")
-                .selectAll("rect")
-                .data(machines[j].Availability)
-                .join("rect")
-                .attr("x", (d) => x(d.StartTimeInInt < 0 ? 0 + i : d.StartTimeInInt + i))
-                .attr("y", (d) => y(j) + 50)
-                .attr("width", d => x(d.EndTimeInInt) - x(d.StartTimeInInt))
-                .attr("height", y.bandwidth())
-                .attr("id", "A" + availbilityseged)
-                .style("opacity", function (d) {
-                    availbilityseged += 1;
-                    return 0;
-                });
+        var availabilityarray = [];
+        for (let k = 0; k < machines[j].Availability.length; k++) {
+            availabilityarray.push(machines[j].Availability[k]);
+        }
+
+        console.log(availabilityarray);
+        var machinerect = svg.append("g")
+            .attr("fill", "yellow")
+            .selectAll("rect")
+            .data(availabilityarray)
+            .join("rect")
+            .attr("x", (d) => d.StartTimeInInt < 0 ? x(0) : x(d.StartTimeInInt))
+            .attr("y", (d) => y(j) + 50)
+            .attr("width", function(d){
+                if(d.EndTimeInInt < 0 && d.StartTimeInInt<0)  return x(0);
+                if(d.EndTimeInInt > 0 && d.StartTimeInInt<0) return x(d.EndTimeInInt)-x(0);
+                if(d.EndTimeInInt > 0 && d.StartTimeInInt>0) return x(d.EndTimeInInt) - x(d.StartTimeInInt);
+            } )
+            .attr("height", y.bandwidth())
+            .attr("id", "A" + availbilityseged)
+            .style("display", function (d) {
+                availbilityseged += 1;
+                console.log(d.StartTimeInInt);
+                return "block";
+            });
+    }
+
+  for (let j = 0; j < machines.length; j++) {
+        var availabilityarray = [];
+        for (let k = 0; k < machines[j].Availability.length; k++) {
+            availabilityarray.push(machines[j].Availability[k]);
+        }
+        for (let i = 1440; i < gm; i += 1440) {
+
+                var machinerect = svg.append("g")
+                    .attr("fill", "yellow")
+                    .selectAll("rect")
+                    .data(availabilityarray)
+                    .join("rect")
+                    .attr("x", (d) =>  x(d.StartTimeInInt + i))
+                    .attr("y", (d) => y(j) + 50)
+                    .attr("width", function(d){ 
+                        if(d.EndTimeInInt < 0 && d.StartTimeInInt<0)  return Math.abs(d.StartTimeInInt)-Math.abs(d.EndTimeInInt);
+                        if(d.EndTimeInInt > 0 && d.StartTimeInInt<0) return d.EndTimeInInt+Math.abs(d.StartTimeInInt);
+                        if(d.EndTimeInInt > 0 && d.StartTimeInInt>0) return x(d.EndTimeInInt) - x(d.StartTimeInInt);
+                    } )
+                    .attr("height", y.bandwidth())
+                    .attr("id", "Ab" + availbilityseged)
+                    .style("display", function (d) {
+                        availbilityseged += 1;
+                        return "block";
+                    });
+            
+
         }
     }
 
-    //Information text on the operation
-    svg.append("g")
-        .attr("fill", "black")
-        .attr("text-anchor", "end")
-        .attr("font-family", "sans-serif")
-        .attr("font-size", 12)
-        .selectAll("text")
-        .data(data)
-        .join("text")
-        .attr("x", d => (x(d.EndTimeInInt) - 5))
-        .attr("y", (d) => y(getMachineIndex(d)) + margin.top + y.bandwidth())
-        .attr("dy", "0.35em")
-        .attr("dx", -4)
-        .attr("id", (d) => d.OperationIndex + "innerrecttext")
-        .text(function (d) {
-            var v = "Job " + d.JobId + " Op " + d.OperationIndex;
-            return v;
-        })
-        .attr("display", d => (((d.EndTimeInInt - d.StartTimeInInt) / max) < 0.04) ? "none" : "block");
     svg.append("g")
         .call(xAxis);
 
@@ -440,27 +481,31 @@ function style() {
     }*/
 }
 function machineAvailability() {
- 
+
     showMachineA += 1;
+
     for (let i = 0; i < availbilityseged; i++) {
-      var d = document.getElementById("A" + i);
-      if (d != null && showMachineA % 2 != 0) {
-        d.style.opacity = 1;
-        for (let i = 0; i < data.length; i++) {
-          var currentrect = document.getElementById(data[i].OperationIndex + "rectID" + data[i].JobId);
-          currentrect, style.opacity = 0.2;
+        var d = document.getElementById("A" + i);
+        if (d != null && showMachineA % 2 != 0) {
+            for (let j = 0; j < data.length; j++) {
+                var currentrect = document.getElementById(data[j].OperationIndex + "rectID" + data[j].JobId);
+                var currenttext = document.getElementById(data[j].OperationIndex + "innerrecttext");
+                currenttext.style.opacity = 0;
+                currentrect.style.opacity = 0.4;
+            }
+            d.style.display = "block";
         }
-  
-      }
-      else {
-        if (d != null) d.style.opacity = 0;
-        for (let i = 0; i < data.length; i++) {
-          varcurrentrect = document.getElementById(data[i].OperationIndex + "rectID" + data[i].JobId);
-          currentrect, style.opacity = 1;
-         }
+        else {
+            for (let j = 0; j < data.length; j++) {
+                var currentrect = document.getElementById(data[j].OperationIndex + "rectID" + data[j].JobId);
+                var currenttext = document.getElementById(data[j].OperationIndex + "innerrecttext");
+                currenttext.style.opacity = 1;
+                currentrect.style.opacity = 1;
+            }
+            if (d != null) d.style.display = "none";
         }
-      }
     }
+}
 
 
 function convertToDate(value) {
@@ -1245,8 +1290,8 @@ function drawWaitBarDiagram() {
 
     var bb = document.getElementById("buttonBar");
     var bp = document.getElementById("buttonPie");
-    if (typeof bb !== 'undefined' ||  bb !== 'null') bb.parentElement.removeChild(bb);
-    else if (typeof bp !== 'undefined'  ||  bp !== 'null') bp.parentElement.removeChild(bb);
+    if (typeof bb !== 'undefined' || bb !== 'null') bb.parentElement.removeChild(bb);
+    else if (typeof bp !== 'undefined' || bp !== 'null') bp.parentElement.removeChild(bb);
 
     for (let i = 0; i < kpicomponent.length; i++) {
         kpicomponent[i].parentElement.removeChild(kpicomponent[i]);
@@ -1270,10 +1315,11 @@ function drawWaitBarDiagram() {
         y = d3.scaleLinear()
             .domain([0, d3.max(waitarray, (d) => d)])
             .range([500 - margin.bottom, margin.top])
-
+        console.log("Waitttt");
+        console.log(waitarray);
         const g = svg.append("g")
             .attr("class", "bars")
-            .attr("fill", "red")
+            .attr("fill", "#36104a")
             .selectAll("rect")
             .data(waitarray)
             .join("rect")
@@ -1473,7 +1519,7 @@ function drawAllocationBarDiagram(operationsummachine) {
 
         const g = svg.append("g")
             .attr("class", "bars")
-            .attr("fill", "red")
+            .attr("fill", "#c98922")
             .selectAll("rect")
             .data(chartdata)
             .join("rect")
@@ -1526,7 +1572,7 @@ function drawDuedateBarChart() {
     var margin = { left: 20, right: 30, top: 30, bottom: 0 };
     var barWidth = 30;  // Width of the bars
     var chartHeight = d3.max(tardinessjob) * 20 + 20;  // Height of chart, from x-axis (ie. y=0)
-    var chartWidth = 400;
+    var chartWidth = 400+ uniquejobs.length*30 ;
 
     var yScale = d3.scaleLinear()
         .domain([0, d3.max(tardinessjob) + 1])
@@ -1579,7 +1625,7 @@ function drawDuedateBarChart() {
         .attr("y", function (d, i) { return -5 + chartHeight - Math.max(0, yScale(d)); })
         .attr("dy", "0.35em")
         .attr("dx", -4)
-        .text((d, i) => "Job " + i + 1)
+        .text((d, i) => "Job " + (i + 1))
 
     svg.append('g')
         .attr('transform', function (d) {
@@ -1775,7 +1821,7 @@ function exportJson() {
     }
 
     var json = JSON.stringify(exportdata, null, 2);
-    download("hello.json", json);
+    download("KPI_Result.json", json);
 
 }
 

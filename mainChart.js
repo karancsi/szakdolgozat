@@ -87,7 +87,8 @@ function drawDiagram(diadata) {
     }
 
     checkUniqueJob(uniquejobs);
-    var colors = ["b07156", "0b6e4f", "7d1d3f", "5bc0be", "412234", "ccbcbc", "52414c", "d1495b", "efa7a7", "eddea4",
+    var colors = ["b07156","9a879d","169873","7a3b69","563440","b2945b","023436","f5ee9e","ff6978","1be7ff","ff5714",
+    "0b6e4f", "7d1d3f", "5bc0be", "412234", "ccbcbc", "52414c", "d1495b", "efa7a7", "eddea4",
         "c0e8f9", "0e3b43", "734b5e", "d8a47f", "ace4aa", "ef8354", "a7bed3", "7d82b8", "33ca7f", "eddea4",
         "628395", "e5fcf5", "734b5e", "41521f", "26a96c", "d45113", "ffa69e", "fe4a49", "33ca7f", "ffa69e",
         "664c43", "542344", "bfd1e5", "2b2d42", "8d99ae", "fa7e61", "f44174", "f46036", "1b998b", "c5d86d"]
