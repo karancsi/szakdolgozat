@@ -68,6 +68,7 @@ var getdates = [];
 
 //Availability
 var availbilityseged = 0;
+var availbilityseged2 = 0;
 var showMachineA = 0;
 
 //Export
@@ -359,7 +360,6 @@ function drawDiagram(diadata) {
             availabilityarray.push(machines[j].Availability[k]);
         }
 
-        console.log(availabilityarray);
         var machinerect = svg.append("g")
             .attr("fill", "yellow")
             .selectAll("rect")
@@ -376,8 +376,8 @@ function drawDiagram(diadata) {
             .attr("id", "A" + availbilityseged)
             .style("display", function (d) {
                 availbilityseged += 1;
-                console.log(d.StartTimeInInt);
-                return "block";
+             
+                return "none";
             });
     }
 
@@ -401,13 +401,12 @@ function drawDiagram(diadata) {
                         if(d.EndTimeInInt > 0 && d.StartTimeInInt>0) return x(d.EndTimeInInt) - x(d.StartTimeInInt);
                     } )
                     .attr("height", y.bandwidth())
-                    .attr("id", "Ab" + availbilityseged)
+                    .attr("id", "Ab" + availbilityseged2)
                     .style("display", function (d) {
-                        availbilityseged += 1;
-                        return "block";
+                        availbilityseged2 += 1;
+                        console.log(availbilityseged2);
+                        return "none";
                     });
-            
-
         }
     }
 
@@ -453,7 +452,6 @@ function drawDiagram(diadata) {
         }
         document.getElementById('chartDiv').prepend(buttonavailability);
         //document.getElementById("checkboxText1").append(checkbox1);
-
     }
 
     style();
@@ -475,17 +473,16 @@ function style() {
     for (let i = 0; i < machines.length; i++) {
         document.getElementById("Back" + machines[i].Name + machines[i].Id).style.opacity = 0.25;
     }
-    /*for (let j = 0; j < data.length; j++) {
-       document.getElementById(data[i].OperationIndex + "rectID" + data[i].JobId).style.border = 3 + "px";
-        
-    }*/
+
 }
 function machineAvailability() {
 
     showMachineA += 1;
-
+    console.log(availbilityseged);
+    console.log(availbilityseged2);
     for (let i = 0; i < availbilityseged; i++) {
         var d = document.getElementById("A" + i);
+       
         if (d != null && showMachineA % 2 != 0) {
             for (let j = 0; j < data.length; j++) {
                 var currentrect = document.getElementById(data[j].OperationIndex + "rectID" + data[j].JobId);
@@ -494,6 +491,7 @@ function machineAvailability() {
                 currentrect.style.opacity = 0.4;
             }
             d.style.display = "block";
+            
         }
         else {
             for (let j = 0; j < data.length; j++) {
@@ -502,7 +500,33 @@ function machineAvailability() {
                 currenttext.style.opacity = 1;
                 currentrect.style.opacity = 1;
             }
-            if (d != null) d.style.display = "none";
+            if (d != null){
+             d.style.display = "none";
+            }
+        }
+    }
+    for (let j = 0; j < availbilityseged2; j++) {
+        var dd = document.getElementById("Ab" + j);
+        if (dd != null && showMachineA % 2 != 0) {
+            for (let k = 0; k < data.length; k++) {
+                var currentrect = document.getElementById(data[k].OperationIndex + "rectID" + data[k].JobId);
+                var currenttext = document.getElementById(data[k].OperationIndex + "innerrecttext");
+                currenttext.style.opacity = 0;
+                currentrect.style.opacity = 0.4;
+            }
+            dd.style.display = "block";
+            
+        }
+        else {
+            for (let k = 0; k < data.length;k++) {
+                var currentrect = document.getElementById(data[k].OperationIndex + "rectID" + data[k].JobId);
+                var currenttext = document.getElementById(data[k].OperationIndex + "innerrecttext");
+                currenttext.style.opacity = 1;
+                currentrect.style.opacity = 1;
+            }
+            if (dd != null){
+             dd.style.display = "none";
+            }
         }
     }
 }
